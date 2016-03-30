@@ -2,39 +2,83 @@
 ## prior knowledge into single-cell trajectory learning
 ## kieranc@well.ox.ac.uk
 
-library(MCMCglmm)
-library(coda)
-library(rstan)
 
-
-
-#' Fit Bayesian non-linear factor analysis
+#' Fit a BNLFA object.
 #' 
-#' @param Y Cell-by-gene (N by G) logged expression matrix
+#' Fit a Bayesian non-linear factor analysis model given some single-cell
+#' gene expression data.
+#' 
+#' This function takes either a \code{SCESet} object or an expression matrix
+#' and returns a \code{bnlfa_fit} object including posterior traces for all
+#' variables.
+#' 
+#' @param x Either an \code{SCESet} from \code{scater} or a
+#' cell-by-gene (N by G) logged expression matrix
+#' @param response The type of factor analysis, either \code{nonlinear} (default) 
+#' or \code{linear} 
+#' @param noise The pooling of the precision parameters, either \code{pool}, \code{partial-pool} 
+#' (default) or \code{none}
+#' @param prior The type of prior specification, either \code{normal} (default) or \code{sign}
+#' @param sign_bits A vector (length G) of sign bits
 #' @param k_means G mean activation strength parameters
 #' @param t0_means G mean activation time parameters
 #' @param k_sd Optional standard deviations for k parameters
 #' @param t0_sd Optional standard deviations for t0 parameters
+#' @param ... Additional arguments to \code{rstan::sampling}
 #' 
-#' @returns ...
-bnlfa <- function(Y, k_means, t0_means,
+#' @import rstan
+#' 
+#' @export
+#' 
+#' @return An object of type \code{bnlfa_fit}
+bnlfa <- function(x, response = c("nonlinear", "linear"),
+                  noise = c("partial-pool", "pool", "none"),
+                  prior = c("normal", "sign"),
+                  sign_bits = NULL, k_means = NULL, t0_means = NULL,
                   k_sd = rep(0.5, ncol(Y)), 
                   t0_sd = rep(0.5, ncol(Y)),
-                  model_name = "bnlfa.stan",
                   ...) {
-  G <- ncol(Y)
-  N <- nrow(Y)
+  ## Find out what sort of model we're trying to fit
+  response <- match.arg(response)
+  noise <- match.arg(noise)
+  prior <- match.arg(prior)
   
-  ## sanity checking
-  stopifnot(length(k_means) == length(t0_means))
-  stopifnot(length(k_means) == G)
+  model_name <- paste(response, noise, prior, sep = "_")
+  if(model_name != "nonlinear_partial-pool_normal") { # REMOVE WHEN MODELS IMPLEMENTED
+    stop("Only nl-pp-n currently supported")
+  }
+  model_file <- paste0(model_name, ".stan")
+  
+  Y <- NULL
+  if(is(x, "SCESet")) {
+    ## convert to expression matrix Y  
+    Y <- t(exprs(x))
+  }
+  if(!is(Y, "matrix")) {
+    stop("x must either be an SCESet or matrix of gene expression values")
+  }
+  
+  ## Now sanitize the input
+  G <- ncol(Y) # number of genes
+  N <- nrow(Y) # number of cells
+  
+  if(prior == "normal") {
+    stopifnot(length(k_means) == G)
+    stopifnot(length(k_sd) == G)
+    if(response == "nonlinear") { # now we have t0 parameters
+      stopifnot(length(t0_means) == G)
+      stopifnot(length(t0_sd) == G)
+    }
+  } else {
+    stopifnot(length(sign_bits) == G)
+  }
   
   ## stan setup
   data <- list(Y = t(Y), G = G, N = N,
                k_means = k_means, k_sd = k_sd,
                t0_means = t0_means, t0_sd = t0_sd)
   
-  stanfile <- system.file(model_name, package = "bnlfa")
+  stanfile <- system.file(model_file, package = "bnlfa")
   model <- stan_model(stanfile)
   
   ## manipulate stan defaults
@@ -48,14 +92,79 @@ bnlfa <- function(Y, k_means, t0_means,
   ## call sampling
   fit <- do.call(sampling, stanargs)
   
-  ## get pseudotime map
-  tmap <- posterior.mode(mcmc(extract(fit, "t")$t))
+
+  bm <- structure(list(fit = fit, G = G, N = N, Y = Y,
+                       iter = stanargs$iter, chains = stanargs$chains,
+                       thin = stanargs$thin, model_name = model_name), 
+                  class = "bnlfa_fit")
   return(list(fit = fit, tmap = tmap))
 }
 
-#' Print bnfla model
-print_model <- function() {
-  stanfile <- system.file("bnlfa.stan", package = "bnlfa")
-  model <- stan_model(stanfile)
-  print(model)
+map_pseudotime <- function(bm) useMethod("map_pseudotime")
+
+#' Extract the MAP pseudotime values from a \code{bnlfa_fit}
+#' 
+#' @importFrom MCMCglmm posterior.mode
+#' @importFrom rstan extract
+#' @importFrom coda mcmc
+#' 
+#' @export
+#' 
+#' @return MAP pseudotime vector of length N
+map_pseudotime.bnlfa_fit <- function(bm) {
+  posterior.mode(mcmc(extract(fit, "t")$t))
+}
+
+#' Print a \code{bnlfa_fit}
+#' 
+#' @export
+print.bnlfa_fit <- function(bm) {
+  cat(paste("A Bayesian non-linear factor analysis fit of type", bm$model_name, "with\n"),
+          paste(bm$N, "cells and", bm$G, "marker genes\n"),
+          paste("MCMC info:", bm$iter, "iterations on", bm$chains, "chains"))
+}
+
+#' Plot a \code{bnlfa_fit}
+#' 
+#' @export
+plot.bnlfa_fit <- function(bm, what = c("trace", "map", "diagnostic", "all"), ...) {
+  what <- match.arg(what)
+  plt <- switch(what,
+                trace = plot_bnlfa_fit_trace(bm, ...),
+                map = plot_bnlfa_fit_map(bm, ...),
+                diagnostic = plot_bnlfa_fit_diagnostics(bm, ...))
+  if(what == "all") {
+    # deal with all case separately
+  }
+  return(plt)
+}
+
+#' Plot MCMC diagnostics.
+#' 
+#' Plot MCMC diagnostics (traceplot and autocorrelation) for a \code{bnlfa_fit} object
+#' 
+#' @param bm A \code{bnlfa_fit} object
+#' @param nrow Number of rows. If 1, plots are side-by-side; if 2, plots are vertically aligned.
+#' @export
+#' @importFrom cowplot plot_grid
+#' 
+#' @return A \code{ggplot2} object
+#' 
+plot_bnlfa_fit_diagnostics <- function(bm, arrange = c("vertical", "horizontal")) {
+  arrange <- match.arg(arrange)
+  nrow <- switch(arrange,
+                 vertical = 2,
+                 horizontal = 1)
+  plt <- cowplot::plot_grid(stan_trace(bm$fit, "lp__"), stan_ac(bm$fit, "lp__"), nrow = nrow)
+  return(plt)
+}
+
+#' Plot heatmaps of gene expression changes
+plot_bnlfa_fit_trace <- function(bm) {
+  
+}
+
+#' Plot gene expression as a function of MAP pseudotime
+plot_bnlfa_fit_map <- function(bm) {
+  
 }

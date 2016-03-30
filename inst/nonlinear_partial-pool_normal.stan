@@ -10,6 +10,7 @@ data {
   
   real t0_means[G]; // mean parameters for t0 provided by user
   real t0_sd[G]; // standard deviation parameters for t0 provided by user
+
 }
 
 parameters {
@@ -24,31 +25,31 @@ parameters {
   real<lower = 0> nu;
   
   real<lower = 0, upper = 1> t[N]; // pseudotime of each cell
+
+
 }
 
 transformed parameters {
   vector[N] mu[G]; // mean for cell i gene g
+  real<lower = 0> one_over_sqrt_tau[G];
+
   for(g in 1:G) {
     for(i in 1:N) mu[g][i] <- 2 * mu0[g] / (1 + exp(-k[g] * (t[i] - t0[g])));
+    one_over_sqrt_tau[g] <- 1 / sqrt(tau[g]);
   }
 }
 
 model {
   // user defined priors
-  for(g in 1:G) {
-    k[g] ~ normal(k_means[g], k_sd[g]);
-    t0[g] ~ normal(t0_means[g], t0_sd[g]);
-  }
+  k ~ normal(k_means, k_sd);
+  t0 ~ normal(t0_means, t0_sd);
   
   // model priors
-
   mu0 ~ exponential(1);
-  for(g in 1:G) tau[g] ~ gamma(nu / 2, 2);
-  for(i in 1:N) t[i] ~ normal(0.5, 1);
+  tau ~ gamma(nu / 2, 2);
+  t ~ normal(0.5, 1);
   
   for(g in 1:G) {
-    for(i in 1:N) {
-      Y[g][i] ~ normal(mu[g][i], sqrt(1 / tau[g]));
-    }
+    Y[g] ~ normal(mu[g], one_over_sqrt_tau[g]);
   }
 }
