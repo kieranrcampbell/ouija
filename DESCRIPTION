@@ -4,14 +4,17 @@ Title: Incorporating prior knowledge in single-cell trajectory learning using
 Version: 0.0.0.9000
 Authors@R: person("Kieran", "Campbell", email = "kieranc@well.ox.ac.uk", role = c("aut", "cre"))
 Description: What the package does (one paragraph).
-Depends:
+Depends: 
     R (>= 3.2.3)
 License: What license is it under?
 LazyData: true
-Imports:
+Imports: 
     ggplot2,
     rstan,
     MCMCglmm,
     coda,
     cowplot
 RoxygenNote: 5.0.1
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr

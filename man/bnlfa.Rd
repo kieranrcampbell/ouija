@@ -5,7 +5,7 @@
 \title{Fit a BNLFA object.}
 \usage{
 bnlfa(x, response = c("nonlinear", "linear"), noise = c("partial-pool",
-  "pool", "none"), prior = c("sign", "normal"), sign_bits = NULL,
+  "pool", "none"), prior = c("normal", "sign"), sign_bits = NULL,
   k_means = NULL, t0_means = NULL, k_sd = rep(0.5, ncol(Y)),
   t0_sd = rep(0.5, ncol(Y)), ...)
 }
@@ -19,7 +19,7 @@ or \code{linear}}
 \item{noise}{The pooling of the precision parameters, either \code{pool}, \code{partial-pool} 
 (default) or \code{none}}
 
-\item{prior}{The type of prior specification, either \code{sign} (default) or \code{normal}}
+\item{prior}{The type of prior specification, either \code{normal} (default) or \code{sign}}
 
 \item{sign_bits}{A vector (length G) of sign bits}
 
