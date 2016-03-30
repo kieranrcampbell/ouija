@@ -35,9 +35,11 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
                   noise = c("partial-pool", "pool", "none"),
                   prior = c("normal", "sign"),
                   sign_bits = NULL, k_means = NULL, t0_means = NULL,
-                  k_sd = rep(0.5, ncol(Y)), 
-                  t0_sd = rep(0.5, ncol(Y)),
+                  k_sd = NULL, 
+                  t0_sd = NULL,
                   ...) {
+  require(rstan) # for some reason this is required despite the @import rstan
+  
   ## Find out what sort of model we're trying to fit
   response <- match.arg(response)
   noise <- match.arg(noise)
@@ -53,6 +55,8 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
   if(is(x, "SCESet")) {
     ## convert to expression matrix Y  
     Y <- t(exprs(x))
+  } else {
+    Y <- x
   }
   if(!is(Y, "matrix")) {
     stop("x must either be an SCESet or matrix of gene expression values")
@@ -61,6 +65,11 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
   ## Now sanitize the input
   G <- ncol(Y) # number of genes
   N <- nrow(Y) # number of cells
+  
+  # we can fill in some values if they're null
+  if(is.null(k_sd)) k_sd <- rep(1, G)
+  if(is.null(t0_means)) t0_means <- rep(0.5, G)
+  if(is.null(t0_sd)) t0_sd <- rep(1, G)
   
   if(prior == "normal") {
     stopifnot(length(k_means) == G)
@@ -97,10 +106,10 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
                        iter = stanargs$iter, chains = stanargs$chains,
                        thin = stanargs$thin, model_name = model_name), 
                   class = "bnlfa_fit")
-  return(list(fit = fit, tmap = tmap))
+  return(bm)
 }
 
-map_pseudotime <- function(bm) useMethod("map_pseudotime")
+map_pseudotime <- function(bm) UseMethod("map_pseudotime")
 
 #' Extract the MAP pseudotime values from a \code{bnlfa_fit}
 #' 
@@ -112,7 +121,7 @@ map_pseudotime <- function(bm) useMethod("map_pseudotime")
 #' 
 #' @return MAP pseudotime vector of length N
 map_pseudotime.bnlfa_fit <- function(bm) {
-  posterior.mode(mcmc(extract(fit, "t")$t))
+  posterior.mode(mcmc(extract(bm$fit, "t")$t))
 }
 
 #' Print a \code{bnlfa_fit}
@@ -127,15 +136,12 @@ print.bnlfa_fit <- function(bm) {
 #' Plot a \code{bnlfa_fit}
 #' 
 #' @export
-plot.bnlfa_fit <- function(bm, what = c("trace", "map", "diagnostic", "all"), ...) {
+plot.bnlfa_fit <- function(bm, what = c("trace", "map", "diagnostic"), ...) {
   what <- match.arg(what)
   plt <- switch(what,
                 trace = plot_bnlfa_fit_trace(bm, ...),
                 map = plot_bnlfa_fit_map(bm, ...),
                 diagnostic = plot_bnlfa_fit_diagnostics(bm, ...))
-  if(what == "all") {
-    # deal with all case separately
-  }
   return(plt)
 }
 
@@ -165,6 +171,17 @@ plot_bnlfa_fit_trace <- function(bm) {
 }
 
 #' Plot gene expression as a function of MAP pseudotime
+#' 
+#' @export
 plot_bnlfa_fit_map <- function(bm) {
-  
+  tmap <- map_pseudotime(bm)
+  Y <- bm$Y
+  dy <- data.frame(Y, pseudotime = tmap)
+  dm <- reshape2::melt(dy, id.vars = "pseudotime", 
+                               variable.name = "gene", 
+                               value.name = "expression")
+  plt <- ggplot(dm, aes(x = pseudotime, y = expression)) + geom_point() +
+    stat_smooth(color = 'red') + facet_wrap(~ gene, scales = "free_y") +
+    xlab("MAP pseudotime")
+  return(plt)
 }
