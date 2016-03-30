@@ -18,8 +18,9 @@ library(rstan)
 #' 
 #' @returns ...
 bnlfa <- function(Y, k_means, t0_means,
-                  k_sd = rep(1, ncol(Y)), 
-                  t0_sd = rep(1, ncol(Y)),
+                  k_sd = rep(0.5, ncol(Y)), 
+                  t0_sd = rep(0.5, ncol(Y)),
+                  model_name = "bnlfa.stan",
                   ...) {
   G <- ncol(Y)
   N <- nrow(Y)
@@ -29,11 +30,11 @@ bnlfa <- function(Y, k_means, t0_means,
   stopifnot(length(k_means) == G)
   
   ## stan setup
-  data <- list(Y = t(Y), G = G, N = N, 
+  data <- list(Y = t(Y), G = G, N = N,
                k_means = k_means, k_sd = k_sd,
                t0_means = t0_means, t0_sd = t0_sd)
   
-  stanfile <- system.file("bnlfa.stan", package = "bnlfa")
+  stanfile <- system.file(model_name, package = "bnlfa")
   model <- stan_model(stanfile)
   
   ## manipulate stan defaults
@@ -50,4 +51,11 @@ bnlfa <- function(Y, k_means, t0_means,
   ## get pseudotime map
   tmap <- posterior.mode(mcmc(extract(fit, "t")$t))
   return(list(fit = fit, tmap = tmap))
+}
+
+#' Print bnfla model
+print_model <- function() {
+  stanfile <- system.file("bnlfa.stan", package = "bnlfa")
+  model <- stan_model(stanfile)
+  print(model)
 }

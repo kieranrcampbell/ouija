@@ -22,6 +22,8 @@ parameters {
   real k[G];
   real t0[G];
   
+  real<lower = 0> nu;
+  
   real<lower = 0, upper = 1> t[N]; // pseudotime of each cell
 
 
@@ -44,12 +46,12 @@ model {
   // model priors
 
   mu0 ~ exponential(1);
-  for(g in 1:G) tau[g] ~ gamma(2.0, 1.0);
+  for(g in 1:G) tau[g] ~ gamma(nu / 2, 2);
   for(i in 1:N) t[i] ~ normal(0.5, 1);
   
   for(g in 1:G) {
     for(i in 1:N) {
-      Y[g][i] ~ normal(mu[g][i], 1 / sqrt(tau[g]));
+      Y[g][i] ~ normal(mu[g][i], sqrt(mu[g][i] / tau[g])));
     }
   }
 }

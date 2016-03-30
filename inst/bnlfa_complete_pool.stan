@@ -16,7 +16,7 @@ data {
 parameters {
   // parameters we'll let stan infer
   real<lower = 0> mu0[G];
-  real<lower = 0> tau[G]; // precision
+  real<lower = 0> tau; // precision
   
   // parameters with user-defined priors
   real k[G];
@@ -44,12 +44,12 @@ model {
   // model priors
 
   mu0 ~ exponential(1);
-  for(g in 1:G) tau[g] ~ gamma(2.0, 1.0);
+  tau ~ gamma(2.0, 1.0);
   for(i in 1:N) t[i] ~ normal(0.5, 1);
   
   for(g in 1:G) {
     for(i in 1:N) {
-      Y[g][i] ~ normal(mu[g][i], 1 / sqrt(tau[g]));
+      Y[g][i] ~ normal(mu[g][i], 1 / sqrt(tau));
     }
   }
 }

@@ -3,7 +3,7 @@ data {
   int<lower = 2> N; // number of cells
   int<lower = 2> G; // number of genes
   
-  vector<lower = 0>[N] Y[G]; // matrix of gene expression values
+  vector[N] Y[G]; // matrix of gene expression values
   
   real k_means[G]; // mean parameters for k provided by user
   real k_sd[G]; // standard deviation parameters for k provided by user
@@ -24,7 +24,11 @@ parameters {
   
   real<lower = 0, upper = 1> t[N]; // pseudotime of each cell
 
-
+  // hyper-parameters for variances
+  real<lower = 0> alpha;
+  real<lower = 0> beta;
+  
+  real nu; // hyper-parameter for means
 }
 
 transformed parameters {
@@ -43,8 +47,12 @@ model {
   
   // model priors
 
-  mu0 ~ exponential(1);
-  for(g in 1:G) tau[g] ~ gamma(2.0, 1.0);
+  nu ~ exponential(1);
+  mu0 ~ normal(nu, 1);
+  alpha ~ gamma(2,1);
+  beta ~ gamma(2,1);
+  
+  for(g in 1:G) tau[g] ~ gamma(alpha, beta);
   for(i in 1:N) t[i] ~ normal(0.5, 1);
   
   for(g in 1:G) {
