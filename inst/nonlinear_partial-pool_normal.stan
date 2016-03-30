@@ -11,12 +11,14 @@ data {
   real t0_means[G]; // mean parameters for t0 provided by user
   real t0_sd[G]; // standard deviation parameters for t0 provided by user
 
+  real<lower = 0> lambda; // hyper-hyper parameter for nu
 }
 
 parameters {
   // parameters we'll let stan infer
   real<lower = 0> mu0[G];
   real<lower = 0> tau[G]; // precision
+  
   
   // parameters with user-defined priors
   real k[G];
@@ -32,11 +34,17 @@ parameters {
 transformed parameters {
   vector[N] mu[G]; // mean for cell i gene g
   real<lower = 0> one_over_sqrt_tau[G];
+  vector<lower = 0>[N] ysd[G];
 
   for(g in 1:G) {
-    for(i in 1:N) mu[g][i] <- 2 * mu0[g] / (1 + exp(-k[g] * (t[i] - t0[g])));
     one_over_sqrt_tau[g] <- 1 / sqrt(tau[g]);
+    for(i in 1:N) {
+      mu[g][i] <- 2 * mu0[g] / (1 + exp(-k[g] * (t[i] - t0[g])));
+      ysd[g][i] <- one_over_sqrt_tau[g] * (0.01 + mu[g][i]);
+    }
+    
   }
+  
 }
 
 model {
@@ -47,9 +55,10 @@ model {
   // model priors
   mu0 ~ exponential(1);
   tau ~ gamma(nu / 2, 2);
+  nu ~ exponential(lambda);
   t ~ normal(0.5, 1);
   
   for(g in 1:G) {
-    Y[g] ~ normal(mu[g], one_over_sqrt_tau[g]);
+    Y[g] ~ normal(mu[g], ysd[g]);
   }
 }

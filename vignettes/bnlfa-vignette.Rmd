@@ -48,9 +48,10 @@ ggplot(dex_melted, aes(x = pseudotime, y = expression)) + geom_point() +
   stat_smooth(color = 'red') + facet_wrap(~ gene, scales = "free_y")
 ```
 
-In order to fit the Bayesian non-linear factor analysis model, we simply call `bnlfa` (model choice options are discussed below). In the most basic case we wish to specify whether the genes turn on or off - to do this we'll provide $k$ mean values of $(5, -5, 5)$, which seems roughly consistent with the synthetic genes:
+In order to fit the Bayesian non-linear factor analysis model, we simply call `bnlfa` (model choice options are discussed below). In the most basic case we wish to specify whether the genes turn on or off - to do this we'll provide $k$ mean values of $(5, -5, 5)$, which seems roughly consistent with the synthetic genes:  
 
 ```{r bnlfa-fit}
+sg <- t(t(synth_gex) / colMeans(synth_gex)) # matrixStats::colVars(synth_gex)
 bm <- bnlfa(synth_gex, k_means = c(5, -5, 5))
 print(bm)
 ```
@@ -67,11 +68,19 @@ We can plot the gene expression against the MAP pseudotime too:
 plot(bm, what = "map")
 ```
 
-and the MAP pseudotime against the 'true' pseudotime:
+and heatmaps of gene expression ordered by pseudotime trace:
+
+```{r plot-pseudotime-trace, fig.width = 8}
+plot(bm, what = "trace")
+```
+
+the MAP pseudotime against the 'true' pseudotime:
 
 ```{r plot-map-against-true, fig.width = 4, fig.height = 3}
 qplot(true_pst, map_pseudotime(bm)) + xlab("True pseudotime") + ylab("MAP pseudotime")
 ```
+
+
 
 ## Model choice
 

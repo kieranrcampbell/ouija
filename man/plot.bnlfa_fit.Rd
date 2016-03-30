@@ -4,7 +4,7 @@
 \alias{plot.bnlfa_fit}
 \title{Plot a \code{bnlfa_fit}}
 \usage{
-plot.bnlfa_fit(bm, what = c("trace", "map", "diagnostic", "all"), ...)
+plot.bnlfa_fit(bm, what = c("trace", "map", "diagnostic"), ...)
 }
 \description{
 Plot a \code{bnlfa_fit}

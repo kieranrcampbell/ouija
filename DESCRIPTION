@@ -13,7 +13,8 @@ Imports:
     rstan,
     MCMCglmm,
     coda,
-    cowplot
+    cowplot,
+    reshape2
 RoxygenNote: 5.0.1
 Suggests: knitr,
     rmarkdown

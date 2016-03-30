@@ -4,7 +4,7 @@
 \alias{map_pseudotime.bnlfa_fit}
 \title{Extract the MAP pseudotime values from a \code{bnlfa_fit}}
 \usage{
-map_pseudotime.bnlfa_fit(bm)
+\method{map_pseudotime}{bnlfa_fit}(bm)
 }
 \value{
 MAP pseudotime vector of length N

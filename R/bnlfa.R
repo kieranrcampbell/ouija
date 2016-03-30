@@ -37,6 +37,7 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
                   sign_bits = NULL, k_means = NULL, t0_means = NULL,
                   k_sd = NULL, 
                   t0_sd = NULL,
+                  lambda = 1e-2,
                   ...) {
   require(rstan) # for some reason this is required despite the @import rstan
   
@@ -46,7 +47,8 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
   prior <- match.arg(prior)
   
   model_name <- paste(response, noise, prior, sep = "_")
-  if(model_name != "nonlinear_partial-pool_normal") { # REMOVE WHEN MODELS IMPLEMENTED
+  if(model_name != "nonlinear_partial-pool_normal" &&
+     model_name != "nonlinear_none_normal") { # REMOVE WHEN MODELS IMPLEMENTED
     stop("Only nl-pp-n currently supported")
   }
   model_file <- paste0(model_name, ".stan")
@@ -85,7 +87,8 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
   ## stan setup
   data <- list(Y = t(Y), G = G, N = N,
                k_means = k_means, k_sd = k_sd,
-               t0_means = t0_means, t0_sd = t0_sd)
+               t0_means = t0_means, t0_sd = t0_sd,
+               lambda = lambda)
   
   stanfile <- system.file(model_file, package = "bnlfa")
   model <- stan_model(stanfile)
@@ -166,8 +169,49 @@ plot_bnlfa_fit_diagnostics <- function(bm, arrange = c("vertical", "horizontal")
 }
 
 #' Plot heatmaps of gene expression changes
-plot_bnlfa_fit_trace <- function(bm) {
+#' 
+#' @importFrom rstan extract
+#' @importFrom cowplot plot_grid
+#' @importFrom viridis scale_fill_viridis
+#' @importFrom reshape2 melt
+#' 
+#' 
+#' @param samples Number of posterior pseudotime samples to use
+#' @export
+#' 
+plot_bnlfa_fit_trace <- function(bm, samples = 20, genes = 1:min(bm$G, 5),
+                                 output = c("grid", "plotlist"), ...) {
+  output <- match.arg(output)
   
+  ttrace <- extract(bm$fit, "t")$t
+  to_sample <- sample(1:min(nrow(ttrace), samples))
+  ttrace <- ttrace[to_sample, ]
+  cell_orders <- apply(ttrace, 1, order)
+  # apply over genes
+  plts <- lapply(genes, function(g) {
+    yg <- bm$Y[,g]
+    Xg <- apply(cell_orders, 2, function(or) yg[or])
+    Xg <- data.frame(Xg)
+    names(Xg) <- 1:ncol(Xg)
+    Xg$x <- 1:nrow(Xg)
+    Xm <- melt(Xg, id.vars = "x", variable.name = "y", value.name = "Expression")
+    
+    ggplot(Xm, aes(x = x, y = y, fill = Expression)) + geom_tile() +
+      xlab("Cell") + ylab("Pseudotime sample") + 
+      scale_fill_viridis() + 
+      theme(axis.ticks = element_blank(),
+            axis.line = element_blank(),
+            panel.grid = element_blank(),
+            panel.border = element_blank(),
+            axis.text = element_blank(),
+            legend.position = "none")
+  })
+
+  if(output == "grid") {
+    return(plot_grid(plotlist = plts, ...))
+  } else {
+    return( plts )
+  }
 }
 
 #' Plot gene expression as a function of MAP pseudotime
