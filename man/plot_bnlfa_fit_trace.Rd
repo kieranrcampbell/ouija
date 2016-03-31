@@ -4,8 +4,8 @@
 \alias{plot_bnlfa_fit_trace}
 \title{Plot heatmaps of gene expression changes}
 \usage{
-plot_bnlfa_fit_trace(bm, samples = 20, genes = 1:min(bm$G, 5),
-  output = c("grid", "plotlist"), ...)
+plot_bnlfa_fit_trace(bm, samples = 50, genes = 1:min(bm$G, 5),
+  output = c("grid", "plotlist"), show_legend = FALSE, ...)
 }
 \arguments{
 \item{samples}{Number of posterior pseudotime samples to use}

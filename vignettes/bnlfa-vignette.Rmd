@@ -70,7 +70,7 @@ plot(bm, what = "map")
 and heatmaps of gene expression ordered by pseudotime trace:
 
 ```{r plot-pseudotime-trace, fig.width = 8}
-plot(bm, what = "trace")
+plot(bm, what = "trace", nrow = 3)
 ```
 
 the MAP pseudotime against the 'true' pseudotime:

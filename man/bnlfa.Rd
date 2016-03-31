@@ -2,12 +2,15 @@
 % Please edit documentation in R/bnlfa.R
 \name{bnlfa}
 \alias{bnlfa}
-\title{Fit a BNLFA object.}
+\title{Bayesian non-linear factor analysis for incorporating 
+prior knowledge into single-cell trajectory learning
+kieranc@well.ox.ac.uk
+Fit a BNLFA object.}
 \usage{
 bnlfa(x, response = c("nonlinear", "linear"), noise = c("partial-pool",
-  "pool", "none"), prior = c("normal", "sign"),
-  model_mean_variance = c(TRUE, FALSE), sign_bits = NULL, k_means = NULL,
-  t0_means = NULL, k_sd = NULL, t0_sd = NULL, lambda = 0.01, ...)
+  "pool", "none"), prior = c("normal", "sign"), model_mean_variance = TRUE,
+  sign_bits = NULL, k_means = NULL, t0_means = NULL, k_sd = NULL,
+  t0_sd = NULL, lambda = 0.01, ...)
 }
 \arguments{
 \item{x}{Either an \code{SCESet} from \code{scater} or a
@@ -20,6 +23,8 @@ or \code{linear}}
 (default) or \code{none}}
 
 \item{prior}{The type of prior specification, either \code{normal} (default) or \code{sign}}
+
+\item{model_mean_variance}{Logical. If \code{TRUE} then the variance as modelled as a function of the mean.}
 
 \item{sign_bits}{A vector (length G) of sign bits}
 

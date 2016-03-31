@@ -1,6 +1,6 @@
-## Bayesian non-linear factor analysis for incorporating 
-## prior knowledge into single-cell trajectory learning
-## kieranc@well.ox.ac.uk
+#' Bayesian non-linear factor analysis for incorporating 
+#' prior knowledge into single-cell trajectory learning
+#' kieranc@well.ox.ac.uk
 
 
 #' Fit a BNLFA object.
@@ -19,6 +19,7 @@
 #' @param noise The pooling of the precision parameters, either \code{pool}, \code{partial-pool} 
 #' (default) or \code{none}
 #' @param prior The type of prior specification, either \code{normal} (default) or \code{sign}
+#' @param model_mean_variance Logical. If \code{TRUE} then the variance as modelled as a function of the mean.
 #' @param sign_bits A vector (length G) of sign bits
 #' @param k_means G mean activation strength parameters
 #' @param t0_means G mean activation time parameters
@@ -190,12 +191,13 @@ plot_bnlfa_fit_diagnostics <- function(bm, arrange = c("vertical", "horizontal")
 #' @param samples Number of posterior pseudotime samples to use
 #' @export
 #' 
-plot_bnlfa_fit_trace <- function(bm, samples = 20, genes = 1:min(bm$G, 5),
-                                 output = c("grid", "plotlist"), ...) {
+plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = 1:min(bm$G, 5),
+                                 output = c("grid", "plotlist"), 
+                                 show_legend = FALSE, ...) {
   output <- match.arg(output)
   
   ttrace <- extract(bm$fit, "t")$t
-  to_sample <- sample(1:min(nrow(ttrace), samples))
+  to_sample <- sample(seq_len(min(nrow(ttrace), samples)))
   ttrace <- ttrace[to_sample, ]
   cell_orders <- apply(ttrace, 1, order)
   # apply over genes
@@ -207,15 +209,16 @@ plot_bnlfa_fit_trace <- function(bm, samples = 20, genes = 1:min(bm$G, 5),
     Xg$x <- 1:nrow(Xg)
     Xm <- melt(Xg, id.vars = "x", variable.name = "y", value.name = "Expression")
     
-    ggplot(Xm, aes(x = x, y = y, fill = Expression)) + geom_tile() +
-      xlab("Cell") + ylab("Pseudotime sample") + 
+    plt <- ggplot(Xm, aes(x = x, y = y, fill = Expression)) + geom_tile() +
+      xlab("Cell") + ylab(expression("Pseudotime\n sample")) + 
       scale_fill_viridis() + 
       theme(axis.ticks = element_blank(),
             axis.line = element_blank(),
             panel.grid = element_blank(),
             panel.border = element_blank(),
-            axis.text = element_blank(),
-            legend.position = "none")
+            axis.text = element_blank())
+    if(!show_legend) plt <- plt + theme(legend.position = "none")
+    return( plt )
   })
 
   if(output == "grid") {
@@ -240,3 +243,14 @@ plot_bnlfa_fit_map <- function(bm) {
     xlab("MAP pseudotime")
   return(plt)
 }
+
+#' Synthetic gene expression matrix
+#' 
+#' A matrix containing some synthetic gene expression data for 100 cells and 3 genes
+#' 
+"synth_gex"
+
+#' Synthetic gene pseudotimes
+#' 
+#' A vector with the 'true' pseudotimes for the synthetic gene expression data in \code{synth_gex}
+"true_pst"
