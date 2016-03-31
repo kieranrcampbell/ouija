@@ -6,7 +6,27 @@
 \usage{
 plot.bnlfa_fit(bm, what = c("trace", "map", "diagnostic"), ...)
 }
+\arguments{
+\item{bm}{An object of class \code{bnlfa_fit}}
+
+\item{what}{One of
+\itemize{
+\item \code{trace} This produces a heatmap of gene expression as a function of pseudotime
+across different pseudotime samples. Underlying call is to \code{\link{plot_bnlfa_fit_trace}}.
+\item \code{map} This plots gene expression as a function of the MAP pseudotime with a red
+line denoting a LOESS fit (showing the overall trend). Underlying call is to
+\code{\link{plot_bnlfa_fit_map}}
+\item \code{diagnostic} This returns trace and autocorrelation plots of the log-posterior
+probability. Underlying call is to \code{\link{plot_bnlfa_fit_diagnostics}}
+}}
+
+\item{...}{Additional arguments passed to the corresponding functions}
+}
+\value{
+A \code{ggplot2} plot.
+}
 \description{
-Plot a \code{bnlfa_fit}
+Plot a \code{bnlfa_fit} object. Returns either a trace fit, MAP fit or MCMC diagnostic fit.
+See the individual function calls (described below) for more details.
 }
 

@@ -155,6 +155,24 @@ print.bnlfa_fit <- function(bm) {
 
 #' Plot a \code{bnlfa_fit}
 #' 
+#' Plot a \code{bnlfa_fit} object. Returns either a trace fit, MAP fit or MCMC diagnostic fit.
+#' See the individual function calls (described below) for more details.
+#' 
+#' @param bm An object of class \code{bnlfa_fit}
+#' @param what One of
+#' \itemize{
+#' \item \code{trace} This produces a heatmap of gene expression as a function of pseudotime
+#' across different pseudotime samples. Underlying call is to \code{\link{plot_bnlfa_fit_trace}}.
+#' \item \code{map} This plots gene expression as a function of the MAP pseudotime with a red
+#' line denoting a LOESS fit (showing the overall trend). Underlying call is to
+#' \code{\link{plot_bnlfa_fit_map}}
+#' \item \code{diagnostic} This returns trace and autocorrelation plots of the log-posterior
+#' probability. Underlying call is to \code{\link{plot_bnlfa_fit_diagnostics}}
+#' }
+#' @param ... Additional arguments passed to the corresponding functions
+#' 
+#' @return A \code{ggplot2} plot.
+#' 
 #' @export
 plot.bnlfa_fit <- function(bm, what = c("trace", "map", "diagnostic"), ...) {
   what <- match.arg(what)
@@ -167,7 +185,11 @@ plot.bnlfa_fit <- function(bm, what = c("trace", "map", "diagnostic"), ...) {
 
 #' Plot MCMC diagnostics.
 #' 
-#' Plot MCMC diagnostics (traceplot and autocorrelation) for a \code{bnlfa_fit} object
+#' Plot MCMC diagnostics (traceplot and autocorrelation) of the log-posterior probability
+#' for a \code{bnlfa_fit} object.
+#' 
+#' Further assessment of convergence can be done using \code{rstan} functions on the
+#' underlying STAN object (accessed through \code{bm$fit}).
 #' 
 #' @param bm A \code{bnlfa_fit} object
 #' @param nrow Number of rows. If 1, plots are side-by-side; if 2, plots are vertically aligned.
@@ -188,6 +210,20 @@ plot_bnlfa_fit_diagnostics <- function(bm, arrange = c("vertical", "horizontal")
 
 #' Plot heatmaps of gene expression changes
 #' 
+#' Produces a heatmap of gene expression as a function of pseudotime
+#' across different pseudotime samples.
+#' 
+#' @param bm An object of class \code{bnlfa_fit}
+#' @param samples Number of posterior pseudotime samples to use (number of rows of heatmap)
+#' @param genes A vector that subsets the gene expression matrix. Defaults to the first \code{g}
+#' genes, where \code{g} is either 5 or the number of genes in the model if less than 5.
+#' @param output If \code{grid} then \code{cowplot::plot_grid} is called and a grid plot
+#' of all genes is returned. If \code{plotlist} then a list of \code{ggplot2} objects is returned 
+#' for the user to customise further
+#' @param show_legend Logical. If \code{TRUE} then the legend (ie gene expression magnitude) is
+#' displayed for each heatmap.
+#' @param ... Additional arguments passed to \code{cowplot::plot_grid}
+#' 
 #' @importFrom rstan extract
 #' @importFrom cowplot plot_grid
 #' @importFrom viridis scale_fill_viridis
@@ -197,7 +233,8 @@ plot_bnlfa_fit_diagnostics <- function(bm, arrange = c("vertical", "horizontal")
 #' @param samples Number of posterior pseudotime samples to use
 #' @export
 #' 
-plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = 1:min(bm$G, 5),
+#' @return A \code{ggplot2} object.
+plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = seq_len(bm$G, 5),
                                  output = c("grid", "plotlist"), 
                                  show_legend = FALSE, ...) {
   stopifnot(is(bm, "bnlfa_fit"))
@@ -237,13 +274,24 @@ plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = 1:min(bm$G, 5),
 
 #' Plot gene expression as a function of MAP pseudotime
 #' 
+#' Plot gene expression as a function of the MAP pseudotime with a red
+#' line denoting a LOESS fit (showing the overall trend). All genes are plotted with
+#' one per grid square (using a call to \code{facet_wrap(~ gene)}).
+#' 
+#' @param bm An object of class \code{bnlfa_fit}
+#' 
+#' @importFrom reshape2 melt
+#' @import ggplot2
+#' 
 #' @export
+#' 
+#' @return An object of class \code{ggplot2}
 plot_bnlfa_fit_map <- function(bm) {
   stopifnot(is(bm, "bnlfa_fit"))
   tmap <- map_pseudotime(bm)
   Y <- bm$Y
   dy <- data.frame(Y, pseudotime = tmap)
-  dm <- reshape2::melt(dy, id.vars = "pseudotime", 
+  dm <- melt(dy, id.vars = "pseudotime", 
                                variable.name = "gene", 
                                value.name = "expression")
   plt <- ggplot(dm, aes(x = pseudotime, y = expression)) + geom_point() +

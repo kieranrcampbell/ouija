@@ -15,6 +15,11 @@ plot_bnlfa_fit_diagnostics(bm, arrange = c("vertical", "horizontal"))
 A \code{ggplot2} object
 }
 \description{
-Plot MCMC diagnostics (traceplot and autocorrelation) for a \code{bnlfa_fit} object
+Plot MCMC diagnostics (traceplot and autocorrelation) of the log-posterior probability
+for a \code{bnlfa_fit} object.
+}
+\details{
+Further assessment of convergence can be done using \code{rstan} functions on the
+underlying STAN object (accessed through \code{bm$fit}).
 }
 

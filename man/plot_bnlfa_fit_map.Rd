@@ -6,7 +6,15 @@
 \usage{
 plot_bnlfa_fit_map(bm)
 }
+\arguments{
+\item{bm}{An object of class \code{bnlfa_fit}}
+}
+\value{
+An object of class \code{ggplot2}
+}
 \description{
-Plot gene expression as a function of MAP pseudotime
+Plot gene expression as a function of the MAP pseudotime with a red
+line denoting a LOESS fit (showing the overall trend). All genes are plotted with
+one per grid square (using a call to \code{facet_wrap(~ gene)}).
 }
 
