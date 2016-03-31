@@ -45,7 +45,7 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
   
   ## Find out what sort of model we're trying to fit
   response <- match.arg(response)
-  noise <- match.arg(noise)
+  noise <- match.arg(noise_pooling)
   prior <- match.arg(prior)
   
   if(!is.logical(model_mean_variance)) stop("Please specify mean_variance as logical")
@@ -112,7 +112,7 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
   if(!('chains' %in% names(stanargs))) stanargs$chains <- 1
   if(!('thin' %in% names(stanargs))) {
     # always specify thin so that approximately 1000 samples are returned
-    stanargs$thin <- ceil((stanargs$iter - stanargs$warmup) / 1000)
+    stanargs$thin <- ceiling((stanargs$iter - stanargs$warmup) / 1000)
   }
   stanargs$object <- model
   stanargs$data <- data
