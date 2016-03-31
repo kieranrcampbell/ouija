@@ -51,7 +51,6 @@ ggplot(dex_melted, aes(x = pseudotime, y = expression)) + geom_point() +
 In order to fit the Bayesian non-linear factor analysis model, we simply call `bnlfa` (model choice options are discussed below). In the most basic case we wish to specify whether the genes turn on or off - to do this we'll provide $k$ mean values of $(5, -5, 5)$, which seems roughly consistent with the synthetic genes:  
 
 ```{r bnlfa-fit}
-sg <- t(t(synth_gex) / colMeans(synth_gex)) # matrixStats::colVars(synth_gex)
 bm <- bnlfa(synth_gex, k_means = c(5, -5, 5))
 print(bm)
 ```
@@ -77,7 +76,13 @@ plot(bm, what = "trace")
 the MAP pseudotime against the 'true' pseudotime:
 
 ```{r plot-map-against-true, fig.width = 4, fig.height = 3}
-qplot(true_pst, map_pseudotime(bm)) + xlab("True pseudotime") + ylab("MAP pseudotime")
+tmap <- map_pseudotime(bm)
+ggplot(data.frame(true_pst = true_pst, tmap = tmap)) + 
+  geom_point(aes(x = true_pst, y = tmap)) + 
+  xlab("True pseudotime") + ylab("MAP pseudotime") + 
+  stat_smooth(aes(x = true_pst, y = tmap), method = "lm", colour = "red") +
+  geom_label(x = 0.2, y = 0.8, label = paste("Correlation:", 
+                                             format(round(cor(true_pst, tmap), 2), nsmall = 2)))
 ```
 
 

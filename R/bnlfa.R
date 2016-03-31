@@ -34,6 +34,7 @@
 bnlfa <- function(x, response = c("nonlinear", "linear"),
                   noise = c("partial-pool", "pool", "none"),
                   prior = c("normal", "sign"),
+                  model_mean_variance = TRUE,
                   sign_bits = NULL, k_means = NULL, t0_means = NULL,
                   k_sd = NULL, 
                   t0_sd = NULL,
@@ -45,6 +46,9 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
   response <- match.arg(response)
   noise <- match.arg(noise)
   prior <- match.arg(prior)
+  
+  if(!is.logical(model_mean_variance)) stop("Please specify mean_variance as logical")
+  mean_variance <- as.integer(model_mean_variance)
   
   model_name <- paste(response, noise, prior, sep = "_")
   if(model_name != "nonlinear_partial-pool_normal" &&
@@ -69,9 +73,11 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
   N <- nrow(Y) # number of cells
   
   # we can fill in some values if they're null
-  if(is.null(k_sd)) k_sd <- rep(1, G)
-  if(is.null(t0_means)) t0_means <- rep(0.5, G)
-  if(is.null(t0_sd)) t0_sd <- rep(1, G)
+  if(prior == "normal") {
+    if(is.null(k_sd)) k_sd <- rep(1, G)
+    if(is.null(t0_means)) t0_means <- rep(0.5, G)
+    if(is.null(t0_sd)) t0_sd <- rep(1, G)
+  }
   
   if(prior == "normal") {
     stopifnot(length(k_means) == G)
@@ -85,10 +91,15 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
   }
   
   ## stan setup
+  ## In a bit of glory for lazy programmers everywhere, rstan doesn't
+  ## throw an error if we include stuff in data list that the model doesn't
+  ## need. So we can fill this with junk for the other models. These can be left as NULL
   data <- list(Y = t(Y), G = G, N = N,
                k_means = k_means, k_sd = k_sd,
                t0_means = t0_means, t0_sd = t0_sd,
-               lambda = lambda)
+               lambda = lambda,
+               mean_variance = mean_variance,
+               sign_bits)
   
   stanfile <- system.file(model_file, package = "bnlfa")
   model <- stan_model(stanfile)

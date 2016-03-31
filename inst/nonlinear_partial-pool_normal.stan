@@ -12,6 +12,13 @@ data {
   real t0_sd[G]; // standard deviation parameters for t0 provided by user
 
   real<lower = 0> lambda; // hyper-hyper parameter for nu
+  
+  /*
+  Binary indicator variable to model the mean variance relationship:
+  if 1 then variance = mean / tau
+  if 0 then variance = 1 / tau
+  */
+  int<lower = 0, upper = 1> mean_variance;
 }
 
 parameters {
@@ -27,8 +34,6 @@ parameters {
   real<lower = 0> nu;
   
   real<lower = 0, upper = 1> t[N]; // pseudotime of each cell
-
-
 }
 
 transformed parameters {
@@ -40,7 +45,11 @@ transformed parameters {
     one_over_sqrt_tau[g] <- 1 / sqrt(tau[g]);
     for(i in 1:N) {
       mu[g][i] <- 2 * mu0[g] / (1 + exp(-k[g] * (t[i] - t0[g])));
-      ysd[g][i] <- one_over_sqrt_tau[g] * (0.01 + mu[g][i]);
+      if(mean_variance == 1) {
+        ysd[g][i] <- one_over_sqrt_tau[g] * (0.01 + mu[g][i]);
+      } else {
+        ysd[g][i] <- one_over_sqrt_tau[g];
+      }
     }
     
   }
