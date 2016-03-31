@@ -16,7 +16,7 @@
 #' cell-by-gene (N by G) logged expression matrix
 #' @param response The type of factor analysis, either \code{nonlinear} (default) 
 #' or \code{linear} 
-#' @param noise The pooling of the precision parameters, either \code{pool}, \code{partial-pool} 
+#' @param noise_pooling The pooling of the precision parameters, either \code{pool}, \code{partial-pool} 
 #' (default) or \code{none}
 #' @param prior The type of prior specification, either \code{normal} (default) or \code{sign}
 #' @param model_mean_variance Logical. If \code{TRUE} then the variance as modelled as a function of the mean.
@@ -33,7 +33,7 @@
 #' 
 #' @return An object of type \code{bnlfa_fit}
 bnlfa <- function(x, response = c("nonlinear", "linear"),
-                  noise = c("partial-pool", "pool", "none"),
+                  noise_pooling = c("partial-pool", "pool", "none"),
                   prior = c("normal", "sign"),
                   model_mean_variance = TRUE,
                   sign_bits = NULL, k_means = NULL, t0_means = NULL,
@@ -108,8 +108,12 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
   ## manipulate stan defaults
   stanargs <- list(...)
   if(!('iter' %in% names(stanargs))) stanargs$iter <- 1e4
+  if(!('warmup' %in% names(stanargs))) stanargs$warmup <- stanargs$iter / 2
   if(!('chains' %in% names(stanargs))) stanargs$chains <- 1
-  if(!('thin' %in% names(stanargs))) stanargs$thin <- 5
+  if(!('thin' %in% names(stanargs))) {
+    # always specify thin so that approximately 1000 samples are returned
+    stanargs$thin <- ceil((stanargs$iter - stanargs$warmup) / 1000)
+  }
   stanargs$object <- model
   stanargs$data <- data
   
@@ -136,6 +140,7 @@ map_pseudotime <- function(bm) UseMethod("map_pseudotime")
 #' 
 #' @return MAP pseudotime vector of length N
 map_pseudotime.bnlfa_fit <- function(bm) {
+  stopifnot(is(bm, "bnlfa_fit"))
   posterior.mode(mcmc(extract(bm$fit, "t")$t))
 }
 
@@ -172,6 +177,7 @@ plot.bnlfa_fit <- function(bm, what = c("trace", "map", "diagnostic"), ...) {
 #' @return A \code{ggplot2} object
 #' 
 plot_bnlfa_fit_diagnostics <- function(bm, arrange = c("vertical", "horizontal")) {
+  stopifnot(is(bm, "bnlfa_fit"))
   arrange <- match.arg(arrange)
   nrow <- switch(arrange,
                  vertical = 2,
@@ -194,6 +200,7 @@ plot_bnlfa_fit_diagnostics <- function(bm, arrange = c("vertical", "horizontal")
 plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = 1:min(bm$G, 5),
                                  output = c("grid", "plotlist"), 
                                  show_legend = FALSE, ...) {
+  stopifnot(is(bm, "bnlfa_fit"))
   output <- match.arg(output)
   
   ttrace <- extract(bm$fit, "t")$t
@@ -232,6 +239,7 @@ plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = 1:min(bm$G, 5),
 #' 
 #' @export
 plot_bnlfa_fit_map <- function(bm) {
+  stopifnot(is(bm, "bnlfa_fit"))
   tmap <- map_pseudotime(bm)
   Y <- bm$Y
   dy <- data.frame(Y, pseudotime = tmap)

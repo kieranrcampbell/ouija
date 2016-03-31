@@ -7,10 +7,10 @@ prior knowledge into single-cell trajectory learning
 kieranc@well.ox.ac.uk
 Fit a BNLFA object.}
 \usage{
-bnlfa(x, response = c("nonlinear", "linear"), noise = c("partial-pool",
-  "pool", "none"), prior = c("normal", "sign"), model_mean_variance = TRUE,
-  sign_bits = NULL, k_means = NULL, t0_means = NULL, k_sd = NULL,
-  t0_sd = NULL, lambda = 0.01, ...)
+bnlfa(x, response = c("nonlinear", "linear"),
+  noise_pooling = c("partial-pool", "pool", "none"), prior = c("normal",
+  "sign"), model_mean_variance = TRUE, sign_bits = NULL, k_means = NULL,
+  t0_means = NULL, k_sd = NULL, t0_sd = NULL, lambda = 0.01, ...)
 }
 \arguments{
 \item{x}{Either an \code{SCESet} from \code{scater} or a
@@ -19,7 +19,7 @@ cell-by-gene (N by G) logged expression matrix}
 \item{response}{The type of factor analysis, either \code{nonlinear} (default) 
 or \code{linear}}
 
-\item{noise}{The pooling of the precision parameters, either \code{pool}, \code{partial-pool} 
+\item{noise_pooling}{The pooling of the precision parameters, either \code{pool}, \code{partial-pool} 
 (default) or \code{none}}
 
 \item{prior}{The type of prior specification, either \code{normal} (default) or \code{sign}}
