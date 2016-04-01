@@ -1,6 +1,6 @@
-#' Bayesian non-linear factor analysis for incorporating 
-#' prior knowledge into single-cell trajectory learning
-#' kieranc@well.ox.ac.uk
+## Bayesian non-linear factor analysis for incorporating 
+## prior knowledge into single-cell trajectory learning
+## kieranc@well.ox.ac.uk
 
 
 #' Fit a BNLFA object.

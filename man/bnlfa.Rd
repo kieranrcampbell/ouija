@@ -2,10 +2,7 @@
 % Please edit documentation in R/bnlfa.R
 \name{bnlfa}
 \alias{bnlfa}
-\title{Bayesian non-linear factor analysis for incorporating 
-prior knowledge into single-cell trajectory learning
-kieranc@well.ox.ac.uk
-Fit a BNLFA object.}
+\title{Fit a BNLFA object.}
 \usage{
 bnlfa(x, response = c("nonlinear", "linear"),
   noise_pooling = c("partial-pool", "pool", "none"), prior = c("normal",
