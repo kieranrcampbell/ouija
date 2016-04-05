@@ -14,7 +14,8 @@ Imports:
     MCMCglmm,
     coda,
     cowplot,
-    reshape2
+    reshape2,
+    viridis
 RoxygenNote: 5.0.1
 Suggests: knitr,
     rmarkdown

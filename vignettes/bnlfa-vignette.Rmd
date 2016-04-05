@@ -2,7 +2,9 @@
 title: "Incorporating prior knowledge in single-cell trajectory learning using Bayesian nonlinear factor analysis"
 author: "Kieran Campbell"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    toc: true
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
   %\VignetteEngine{knitr::rmarkdown}
@@ -25,7 +27,11 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE,
 
 ## Introduction
 
-Todo
+`BNLFA` allows the incorporation of prior biological knowledge into single-cell trajectory learning in a principled, probabilstic manner. This is ideal for the case when the behaviour of a small number of marker genes for a particular pathway is known a-priori and a trajectory for that pathway needs found.
+
+Prior biological knowledge can be encoded either in a fine-grained or coarse form. Fine-grained involves specifying priors on how quickly a given gene turns on or off and where in the trajectory this occurs. The coarse approach simply involves specifying whether you expect a gene to turn on or off anywhere along the trajectory. For more information see [Model choice](#model-choice).
+
+Under the hood, BNLFA uses Bayesian non-linear factor analysis with priors on the factor loading matrix to specify gene behaviour. Inference is performed using the [Stan](http://mc-stan.org) probabilistic programming language.
 
 
 ## A basic example using synthetic data
@@ -89,7 +95,51 @@ ggplot(data.frame(true_pst = true_pst, tmap = tmap)) +
 
 ## Model choice
 
-Todo
+`BNLFA` comes with several model choice variants. For larger numbers of genes, inference is robust to model fits so these won't matter. However, for a few key marker genes correct model selection is key, so it is suggested you play around with various model types and check both MCMC diagnostics and gene behaviour using both `plot(bm, what = "diagnostic")` and `plot(bm, what = "map")` respectively.
+
+### Noise pooling
+
+Inference of pseudotime comes down to modelling the gene expression of gene $g$ in cell $i$ as
+
+$$ y_{ig} \sim N(\mu_{ig}, 1 / \tau_g) $$
+
+where $\mu_{ig}$ is the mean (parameterised either as a linear or sigmoidal function of pseudotime) and $\tau_g$ is the precision of gene $g$. We can impose variance levels of pooling as specified by the `noise_pooling` parameter:
+
+* `noise_pooling = "partial_pool"` The precision parameters are partially pooled towards a common value (equivalent to shrinkage in most genomics applications). Here $\tau_g \sim \text{Gamma}(\nu / 2, 2)$
+* `noise_pooling = "pool"` The precision parameters are completely pooled to an identical value, so $\tau_g = \tau$ and $\tau \sim \text{Gamma}(2,1)$
+* `noise_pooling = "none"` The precision parameters are independent, so $\tau_g \sim \text{Gamma}(2,1)$
+
+### Types of prior biological knowledge
+
+BNLFA allows for two types of biological knowledge to be encoded (though not currently simultaneously): a `fine-grained` knowledge of where in a trajectory a gene behaviour occurs (along with the corresponding magnitude) and a `coarse` knowledge of whether a certain gene turns on or off, but not necessarily where or by how much. 
+
+#### Fine-grained behaviour
+
+Here the mean expression for gene $g$ in cell $i$ is given by
+
+$$ \mu_{ig} = \frac{2\mu^{(0)}_g}{1 + \exp(-k_g(t_i - t^{(0)}_g))} $$
+
+where $k_g$ encodes the **activation strength** and $t^{(0)}_g$ encodes the **activation time** of gene $g$. To incorporate prior knowledge the user supplies a prior mean (and variance) for both $k_g$ and $t^{(0)}$, so
+
+$$ k_g \sim N(\mu_{kg}, \sigma^2_{kg})$$
+$$ t^{(0)}_g \sim N(\mu_{tg}, \sigma^2_{tg}) $$ 
+
+For example, if $\mu_{kg} = 5$ then the user has a prior expectation that gene $g$ turns on (since $k>0$), while if $\mu_{tg} = 0.5$ then the prior expectation is that this behaviour occurs half way through the trajectory. $\sigma^2_{kg}$ and $\sigma^2_{tg}$ code the strength of belief in these priors, so for very small variances we are very sure of the gene behaviour, and vice versa.
+
+#### Coarse behaviour
+
+Here the mean expression for gene $g$ in cell $i$ is given by
+
+$$ \mu_{ig} = \frac{2\mu^{(0)}_g}{1 + \exp(-s_g k_g(t_i - t^{(0)}_g))} $$
+
+where $k_g \geq 0$. $s_g$ is a vector of $1$s and $-1$s encoding whether a gene turns on or off respectively, and must be provided through the `sign_bits` argument in `bnlfa`. 
+
+### Mean-variance relationships
+
+In single-cell genomics data are typically over-dispersed (aka heteroskedastic along a pseudotime trajectory) even when logged. BNLFA provides two options for modelling the variance of gene expression in cell $i$ of gene $g$ $\text{Var}[X_{ig}]$:
+
+* `model_mean_variance = TRUE` Then $\text{Var}[X_{ig}] = \text{E}[X_{ig}] (1 +  \text{E}[X_{ig}] / \tau_g)$. This essentially gives an over-dispersed (negative-binomial) mean variance relationship and $\tau_g$ becomes the inverse dispersion parameter (note that any pooling as per `noise_pooling` still applies).
+* `model_mean_variance = FALSE` Then $\text{Var}[X_{ig}] = 1 / \tau_g$ and the noise is assumed constant along the trajectory.
 
 ## Technical info
 
