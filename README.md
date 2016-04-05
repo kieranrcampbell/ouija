@@ -2,9 +2,7 @@
 
 R package for Bayesian non-linear factor analysis for incorporating prior knowledge in single-cell trajectory learning.
 
-## Warning
-
-If there was a greek letter before alpha, it would describe this package. 
+Full vignette can be found [here](http://kieranrcampbell.github.io/bnlfa).
 
 ## Installation
 
