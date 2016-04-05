@@ -15,13 +15,43 @@ devtools::install_github("kieranrcampbell/bnlfa")
 
 ## Usage
 
-```R
-## Using gene expression matrix Y
-bm <- bnlfa(Y, prior_info, model_type, mcmc_pars)
+### Model fitting
 
-## Using scater object
-bm <- bnlfa(sce, prior_info, model_type, mcmc_pars)
+```R
+## Using gene expression matrix Y, specify direction (off or on)
+## of each gene using 'sign_bits' (-1 -> off, 1 -> on)
+sign_bits <- c(-1, 1, -1, 1)
+
+bm <- bnlfa(Y, prior = "sign", sign_bits = sign_bits)
 ```
+
+### Plotting
+
+Plot diagnostics:
+
+```R
+plot(bm, what = "diagnostic")
+```
+
+![Diganostic plot](inst/www/diagnostic_plot_small.png)
+
+Plot MAP gene behaviour:
+
+```R
+plot(bm, what = "map")
+```
+
+![MAP plot](inst/www/map_plot_small.png)
+
+Plot pseudotime trace heatmap:
+
+```R
+plot(bm, what = "trace")
+```
+
+![Trace plot](inst/www/trace_plot_small.png)
+
+
 
 ## Authors
 

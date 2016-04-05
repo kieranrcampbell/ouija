@@ -4,17 +4,20 @@
 \alias{plot_bnlfa_fit_map}
 \title{Plot gene expression as a function of MAP pseudotime}
 \usage{
-plot_bnlfa_fit_map(bm)
+plot_bnlfa_fit_map(bm, genes = seq_len(min(bm$G, 4)))
 }
 \arguments{
 \item{bm}{An object of class \code{bnlfa_fit}}
+
+\item{genes}{A vector that subsets the gene expression matrix. Defaults to the first \code{g}
+genes, where \code{g} is either 4 or the number of genes in the model if less than 4.}
 }
 \value{
 An object of class \code{ggplot2}
 }
 \description{
 Plot gene expression as a function of the MAP pseudotime with a red
-line denoting a LOESS fit (showing the overall trend). All genes are plotted with
+line denoting a LOESS fit (showing the overall trend). Genes are plotted with
 one per grid square (using a call to \code{facet_wrap(~ gene)}).
 }
 

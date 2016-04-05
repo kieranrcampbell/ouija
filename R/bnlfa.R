@@ -217,7 +217,7 @@ plot_bnlfa_fit_diagnostics <- function(bm, arrange = c("vertical", "horizontal")
 #' @param bm An object of class \code{bnlfa_fit}
 #' @param samples Number of posterior pseudotime samples to use (number of rows of heatmap)
 #' @param genes A vector that subsets the gene expression matrix. Defaults to the first \code{g}
-#' genes, where \code{g} is either 5 or the number of genes in the model if less than 5.
+#' genes, where \code{g} is either 4 or the number of genes in the model if less than 4.
 #' @param output If \code{grid} then \code{cowplot::plot_grid} is called and a grid plot
 #' of all genes is returned. If \code{plotlist} then a list of \code{ggplot2} objects is returned 
 #' for the user to customise further
@@ -235,7 +235,7 @@ plot_bnlfa_fit_diagnostics <- function(bm, arrange = c("vertical", "horizontal")
 #' @export
 #' 
 #' @return A \code{ggplot2} object.
-plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = seq_len(min(bm$G, 5)),
+plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = seq_len(min(bm$G, 4)),
                                  output = c("grid", "plotlist"), 
                                  show_legend = FALSE, ...) {
   stopifnot(is(bm, "bnlfa_fit"))
@@ -276,10 +276,12 @@ plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = seq_len(min(bm$G, 5))
 #' Plot gene expression as a function of MAP pseudotime
 #' 
 #' Plot gene expression as a function of the MAP pseudotime with a red
-#' line denoting a LOESS fit (showing the overall trend). All genes are plotted with
+#' line denoting a LOESS fit (showing the overall trend). Genes are plotted with
 #' one per grid square (using a call to \code{facet_wrap(~ gene)}).
 #' 
 #' @param bm An object of class \code{bnlfa_fit}
+#' @param genes A vector that subsets the gene expression matrix. Defaults to the first \code{g}
+#' genes, where \code{g} is either 4 or the number of genes in the model if less than 4.
 #' 
 #' @importFrom reshape2 melt
 #' @import ggplot2
@@ -287,10 +289,10 @@ plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = seq_len(min(bm$G, 5))
 #' @export
 #' 
 #' @return An object of class \code{ggplot2}
-plot_bnlfa_fit_map <- function(bm) {
+plot_bnlfa_fit_map <- function(bm, genes = seq_len(min(bm$G, 4))) {
   stopifnot(is(bm, "bnlfa_fit"))
   tmap <- map_pseudotime(bm)
-  Y <- bm$Y
+  Y <- bm$Y[,genes]
   dy <- data.frame(Y, pseudotime = tmap)
   dm <- melt(dy, id.vars = "pseudotime", 
                                variable.name = "gene", 

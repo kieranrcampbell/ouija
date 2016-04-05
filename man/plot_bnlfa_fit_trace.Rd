@@ -4,7 +4,7 @@
 \alias{plot_bnlfa_fit_trace}
 \title{Plot heatmaps of gene expression changes}
 \usage{
-plot_bnlfa_fit_trace(bm, samples = 50, genes = seq_len(min(bm$G, 5)),
+plot_bnlfa_fit_trace(bm, samples = 50, genes = seq_len(min(bm$G, 4)),
   output = c("grid", "plotlist"), show_legend = FALSE, ...)
 }
 \arguments{
@@ -13,7 +13,7 @@ plot_bnlfa_fit_trace(bm, samples = 50, genes = seq_len(min(bm$G, 5)),
 \item{samples}{Number of posterior pseudotime samples to use (number of rows of heatmap)}
 
 \item{genes}{A vector that subsets the gene expression matrix. Defaults to the first \code{g}
-genes, where \code{g} is either 5 or the number of genes in the model if less than 5.}
+genes, where \code{g} is either 4 or the number of genes in the model if less than 4.}
 
 \item{output}{If \code{grid} then \code{cowplot::plot_grid} is called and a grid plot
 of all genes is returned. If \code{plotlist} then a list of \code{ggplot2} objects is returned 
