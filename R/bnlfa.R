@@ -53,7 +53,8 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
   
   model_name <- paste(response, noise, prior, sep = "_")
   if(model_name != "nonlinear_partial-pool_normal" &&
-     model_name != "nonlinear_none_normal") { # REMOVE WHEN MODELS IMPLEMENTED
+     model_name != "nonlinear_none_normal" &&
+     model_name != "nonlinear_partial-pool_sign") { # REMOVE WHEN MODELS IMPLEMENTED
     stop("Only nl-pp-n currently supported")
   }
   model_file <- paste0(model_name, ".stan")
@@ -100,7 +101,7 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
                t0_means = t0_means, t0_sd = t0_sd,
                lambda = lambda,
                mean_variance = mean_variance,
-               sign_bits)
+               sign_bits = sign_bits)
   
   stanfile <- system.file(model_file, package = "bnlfa")
   model <- stan_model(stanfile)
@@ -234,7 +235,7 @@ plot_bnlfa_fit_diagnostics <- function(bm, arrange = c("vertical", "horizontal")
 #' @export
 #' 
 #' @return A \code{ggplot2} object.
-plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = seq_len(bm$G, 5),
+plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = seq_len(min(bm$G, 5)),
                                  output = c("grid", "plotlist"), 
                                  show_legend = FALSE, ...) {
   stopifnot(is(bm, "bnlfa_fit"))

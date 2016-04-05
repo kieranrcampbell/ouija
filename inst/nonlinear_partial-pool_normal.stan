@@ -46,7 +46,7 @@ transformed parameters {
     for(i in 1:N) {
       mu[g][i] <- 2 * mu0[g] / (1 + exp(-k[g] * (t[i] - t0[g])));
       if(mean_variance == 1) {
-        ysd[g][i] <- one_over_sqrt_tau[g] * (0.01 + mu[g][i]);
+        ysd[g][i] <- sqrt(mu[g][i] * (1 + mu[g][i] / tau[g]));
       } else {
         ysd[g][i] <- one_over_sqrt_tau[g];
       }

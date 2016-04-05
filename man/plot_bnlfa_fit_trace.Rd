@@ -4,7 +4,7 @@
 \alias{plot_bnlfa_fit_trace}
 \title{Plot heatmaps of gene expression changes}
 \usage{
-plot_bnlfa_fit_trace(bm, samples = 50, genes = seq_len(bm$G, 5),
+plot_bnlfa_fit_trace(bm, samples = 50, genes = seq_len(min(bm$G, 5)),
   output = c("grid", "plotlist"), show_legend = FALSE, ...)
 }
 \arguments{
