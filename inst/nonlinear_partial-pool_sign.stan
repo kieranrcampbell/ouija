@@ -30,7 +30,8 @@ parameters {
   
   real<lower = 0> nu;
   
-  real<lower = 0, upper = 1> t[N]; // pseudotime of each cell
+  # real<lower = 0, upper = 1> t[N]; // pseudotime of each cell
+  real t[N];
 }
 
 transformed parameters {
@@ -43,7 +44,7 @@ transformed parameters {
     for(i in 1:N) {
       mu[g][i] <- 2 * mu0[g] / (1 + exp(-sign_bits[g] * k[g] * (t[i] - t0[g])));
       if(mean_variance == 1) {
-        ysd[g][i] <- sqrt(mu[g][i] * (1 + mu[g][i] / tau[g]));
+        ysd[g][i] <- sqrt(0.1 + mu[g][i] * (1 + mu[g][i] / tau[g]));
       } else {
         ysd[g][i] <- one_over_sqrt_tau[g];
       }
@@ -64,9 +65,10 @@ model {
   mu0 ~ exponential(1);
   tau ~ gamma(nu / 2, 2);
   nu ~ exponential(lambda);
-  t ~ normal(0.5, 1);
+  t ~ normal(0, 1);
   
   for(g in 1:G) {
+    // Y[g] ~ student_t(1, mu[g], ysd[g]);
     Y[g] ~ normal(mu[g], ysd[g]);
   }
 }
