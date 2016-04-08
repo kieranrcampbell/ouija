@@ -32,8 +32,11 @@ parameters {
   real t0[G];
   
   real<lower = 0> nu;
+  real<lower = 0> mu_hyper;
   
   real<lower = 0, upper = 1> t[N]; // pseudotime of each cell
+  
+  real<lower = 0, upper = 1> theta[G];
 }
 
 transformed parameters {
@@ -46,6 +49,7 @@ transformed parameters {
     for(i in 1:N) {
       mu[g][i] <- 2 * mu0[g] / (1 + exp(-k[g] * (t[i] - t0[g])));
       if(mean_variance == 1) {
+       # ysd[g][i] <- sqrt(mu[g][i] / tau[g] + 1e-4);
         ysd[g][i] <- sqrt(0.01 + mu[g][i] * (1 + mu[g][i] / tau[g]));
       } else {
         ysd[g][i] <- one_over_sqrt_tau[g];
@@ -62,13 +66,25 @@ model {
   t0 ~ normal(t0_means, t0_sd);
   
   // model priors
-  mu0 ~ exponential(1);
-  tau ~ gamma(nu / 2, 2);
+  mu0 ~ gamma(mu_hyper / 2, 0.5);
+  
+  /* Try tau ~ chi-sq(nu) using gamma approximation. See
+  http://www.stat.umn.edu/geyer/old03/5102/notes/brand.pdf */
+  tau ~ gamma(nu / 2, 0.5);
   nu ~ exponential(lambda);
   t ~ normal(0.5, 1);
   
   for(g in 1:G) {
-    //Y[g] ~ normal(mu[g], ysd[g]);
-    Y[g] ~ student_t(1, mu[g], ysd[g]);
+    theta[g] ~ beta(2,2);
+    for(i in 1:N) {
+      if(Y[g][i] == 0) {
+        increment_log_prob(log_sum_exp(bernoulli_log(1, theta[g]),
+        bernoulli_log(0, theta[g]) + student_t_log(Y[g][i], 2, mu[g][i], ysd[g][i])));
+      } else {
+        increment_log_prob(bernoulli_log(0, theta[g]) +
+        student_t_log(Y[g][i], 2, mu[g][i], ysd[g][i]));
+      }
+    }
+    
   }
 }
