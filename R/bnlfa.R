@@ -35,11 +35,12 @@
 bnlfa <- function(x, response = c("nonlinear", "linear"),
                   noise_pooling = c("partial-pool", "pool", "none"),
                   prior = c("normal", "sign"),
+                  init = "random",
                   model_mean_variance = TRUE,
                   sign_bits = NULL, k_means = NULL, t0_means = NULL,
                   k_sd = NULL, 
                   t0_sd = NULL,
-                  lambda = 1e-2,
+                  lambda = 1,
                   ...) {
   require(rstan) # for some reason this is required despite the @import rstan
   
@@ -117,6 +118,7 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
   }
   stanargs$object <- model
   stanargs$data <- data
+  stanargs$init <- init
   
   ## call sampling
   fit <- do.call(sampling, stanargs)
@@ -129,6 +131,7 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
   return(bm)
 }
 
+#' @export
 map_pseudotime <- function(bm) UseMethod("map_pseudotime")
 
 #' Extract the MAP pseudotime values from a \code{bnlfa_fit}
@@ -257,6 +260,7 @@ plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = seq_len(min(bm$G, 4))
     plt <- ggplot(Xm, aes(x = x, y = y, fill = Expression)) + geom_tile() +
       xlab("Cell") + ylab(expression("Pseudotime\n sample")) + 
       scale_fill_viridis() + 
+      theme_bw() + 
       theme(axis.ticks = element_blank(),
             axis.line = element_blank(),
             panel.grid = element_blank(),
@@ -298,8 +302,8 @@ plot_bnlfa_fit_map <- function(bm, genes = seq_len(min(bm$G, 4))) {
                                variable.name = "gene", 
                                value.name = "expression")
   plt <- ggplot(dm, aes(x = pseudotime, y = expression)) + geom_point() +
-    stat_smooth(color = 'red') + facet_wrap(~ gene, scales = "free_y") +
-    xlab("MAP pseudotime")
+    geom_smooth(colour = "red") + facet_wrap(~ gene, scales = "free_y") +
+    xlab("MAP pseudotime") + theme_bw()
   return(plt)
 }
 
