@@ -6,8 +6,9 @@
 \usage{
 bnlfa(x, response = c("nonlinear", "linear"),
   noise_pooling = c("partial-pool", "pool", "none"), prior = c("normal",
-  "sign"), model_mean_variance = TRUE, sign_bits = NULL, k_means = NULL,
-  t0_means = NULL, k_sd = NULL, t0_sd = NULL, lambda = 0.01, ...)
+  "sign"), init = "random", model_mean_variance = TRUE, sign_bits = NULL,
+  k_means = NULL, t0_means = NULL, k_sd = NULL, t0_sd = NULL,
+  lambda = 0.01, ...)
 }
 \arguments{
 \item{x}{Either an \code{SCESet} from \code{scater} or a

@@ -24,7 +24,8 @@ parameters {
   real<lower = 0> mu0[G];
   real<lower = 0> tau[G]; // precision
   
-  real<lower = 0> k[G];
+  // real<lower = 0> k[G];
+  real l[G];
   real<lower = 0> k_prior;
   real t0[G];
   
@@ -32,33 +33,51 @@ parameters {
   
   # real<lower = 0, upper = 1> t[N]; // pseudotime of each cell
   real t[N];
+  
+  real<lower = 0, upper = 1> theta[G]; // dropout for each gene
 }
 
 transformed parameters {
-  vector[N] mu[G]; // mean for cell i gene g
-  real<lower = 0> one_over_sqrt_tau[G];
-  vector<lower = 0>[N] ysd[G];
+  // vector[N] mu[G]; // mean for cell i gene g
+  // real<lower = 0> one_over_sqrt_tau[G];
+  // vector<lower = 0>[N] ysd[G];
 
+  // for(g in 1:G) {
+  //   one_over_sqrt_tau[g] <- 1 / sqrt(tau[g]);
+  //   for(i in 1:N) {
+  //     mu[g][i] <- 2 * mu0[g] / (1 + exp(-sign_bits[g] * k[g] * (t[i] - t0[g])));
+  //     if(mean_variance == 1) {
+  //       ysd[g][i] <- sqrt(0.1 + mu[g][i] * (1 + mu[g][i] / tau[g]));
+  //     } else {
+  //       ysd[g][i] <- one_over_sqrt_tau[g];
+  //     }
+  //   }
+  //   
+  // }
+  real<lower = 0> one_over_sqrt_tau[G];
   for(g in 1:G) {
     one_over_sqrt_tau[g] <- 1 / sqrt(tau[g]);
-    for(i in 1:N) {
-      mu[g][i] <- 2 * mu0[g] / (1 + exp(-sign_bits[g] * k[g] * (t[i] - t0[g])));
-      if(mean_variance == 1) {
-        ysd[g][i] <- sqrt(0.1 + mu[g][i] * (1 + mu[g][i] / tau[g]));
-      } else {
-        ysd[g][i] <- one_over_sqrt_tau[g];
-      }
-    }
-    
   }
   
 }
 
 model {
+  real k[G];
+  vector[N] mu[G]; // mean for cell i gene g
+  // real<lower = 0> one_over_sqrt_tau[G];
+  //vector<lower = 0>[N] ysd[G];
+  vector[N] ysd[G];
+  
+  l ~ normal(0, 1);
+  for(g in 1:G) {
+    k[g] <- exp(l[g]);
+    increment_log_prob(l[g]);
+  }
+  
   // user defined priors
-  k ~ exponential(k_prior);
+  // k ~ exponential(k_prior);
   t0 ~ normal(0.5, 1);
-  k_prior ~ gamma(2,1);
+  // k_prior ~ gamma(2,1);
   
   
   // model priors
@@ -67,8 +86,24 @@ model {
   nu ~ exponential(lambda);
   t ~ normal(0, 1);
   
+
   for(g in 1:G) {
-    // Y[g] ~ student_t(1, mu[g], ysd[g]);
-    Y[g] ~ normal(mu[g], ysd[g]);
+    // one_over_sqrt_tau[g] <- 1 / sqrt(tau[g]);
+    theta[g] ~ beta(2,2);
+    for(i in 1:N) {
+      mu[g][i] <- 2 * mu0[g] / (1 + exp(-sign_bits[g] * k[g] * (t[i] - t0[g])));
+      if(mean_variance == 1) {
+        ysd[g][i] <- sqrt(0.01 + mu[g][i] * (1 + mu[g][i] / tau[g]));
+      } else {
+        ysd[g][i] <- one_over_sqrt_tau[g];
+      }
+      if(Y[g][i] == 0) {
+        increment_log_prob(log_sum_exp(bernoulli_log(1, theta[g]),
+        bernoulli_log(0, theta[g]) + normal_log(Y[g][i], mu[g][i], ysd[g][i])));
+      } else {
+        increment_log_prob(bernoulli_log(0, theta[g]) +
+        normal_log(Y[g][i], mu[g][i], ysd[g][i]));
+      }
+    }
   }
 }
