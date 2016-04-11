@@ -3,6 +3,7 @@
 S3method(map_pseudotime,bnlfa_fit)
 S3method(print,bnlfa_fit)
 export(bnlfa)
+export(map_pseudotime)
 export(plot.bnlfa_fit)
 export(plot_bnlfa_fit_diagnostics)
 export(plot_bnlfa_fit_map)

@@ -8,11 +8,12 @@ bnlfa(x, response = c("nonlinear", "linear"),
   noise_pooling = c("partial-pool", "pool", "none"), prior = c("normal",
   "sign"), init = "random", model_mean_variance = TRUE, sign_bits = NULL,
   k_means = NULL, t0_means = NULL, k_sd = NULL, t0_sd = NULL,
-  lambda = 0.01, ...)
+  lambda = 1, ...)
 }
 \arguments{
 \item{x}{Either an \code{SCESet} from \code{scater} or a
-cell-by-gene (N by G) logged expression matrix}
+cell-by-gene (N by G) matrix of non-negative values representing gene expression.
+log2(TPM + 1) is recommended.}
 
 \item{response}{The type of factor analysis, either \code{nonlinear} (default) 
 or \code{linear}}

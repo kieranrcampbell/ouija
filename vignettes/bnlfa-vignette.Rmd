@@ -31,6 +31,8 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE,
 
 Prior biological knowledge can be encoded either in a fine-grained or coarse form. Fine-grained involves specifying priors on how quickly a given gene turns on or off and where in the trajectory this occurs. The coarse approach simply involves specifying whether you expect a gene to turn on or off anywhere along the trajectory. For more information see [Model choice](#model-choice).
 
+The input to BNLFA should be a cell-by-gene expression matrix of non-negative values. We recommend using `log2(TPM + 1)` or `log2(RPKM + 1)`.
+
 Under the hood, BNLFA uses Bayesian non-linear factor analysis with priors on the factor loading matrix to specify gene behaviour. Inference is performed using the [Stan](http://mc-stan.org) probabilistic programming language.
 
 

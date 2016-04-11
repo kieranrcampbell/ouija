@@ -13,7 +13,8 @@
 #' variables.
 #' 
 #' @param x Either an \code{SCESet} from \code{scater} or a
-#' cell-by-gene (N by G) logged expression matrix
+#' cell-by-gene (N by G) matrix of non-negative values representing gene expression.
+#' log2(TPM + 1) is recommended.
 #' @param response The type of factor analysis, either \code{nonlinear} (default) 
 #' or \code{linear} 
 #' @param noise_pooling The pooling of the precision parameters, either \code{pool}, \code{partial-pool} 
