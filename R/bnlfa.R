@@ -132,7 +132,15 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
   return(bm)
 }
 
+#' Extract the MAP pseudotime values from a \code{bnlfa_fit}
+#' 
+#' @importFrom MCMCglmm posterior.mode
+#' @importFrom rstan extract
+#' @importFrom coda mcmc
+#' 
 #' @export
+#' 
+#' @return MAP pseudotime vector of length N
 map_pseudotime <- function(bm) UseMethod("map_pseudotime")
 
 #' Extract the MAP pseudotime values from a \code{bnlfa_fit}
@@ -148,6 +156,23 @@ map_pseudotime.bnlfa_fit <- function(bm) {
   stopifnot(is(bm, "bnlfa_fit"))
   posterior.mode(mcmc(extract(bm$fit, "t")$t))
 }
+
+#' Reconstructed pseudotimes
+#' @export
+rexprs <- function(bm) UseMethod("rexprs")
+
+#' @importFrom MCMCglmm posterior.mode
+#' @importFrom rstan extract
+#' @importFrom coda mcmc
+#' @export
+rexprs.bnlfa_fit <- function(bm) {
+  stopifnot(is(bm, "bnlfa_fit"))
+  Z <- apply(extract(bm$fit, "mu")$mu, 3, function(x) posterior.mode(mcmc(x)))
+  Z <- t(Z)
+  colnames(Z) <- colnames(bm$Y)
+  return(Z)
+}
+
 
 #' Print a \code{bnlfa_fit}
 #' 
@@ -306,6 +331,42 @@ plot_bnlfa_fit_map <- function(bm, genes = seq_len(min(bm$G, 4))) {
     geom_smooth(colour = "red") + facet_wrap(~ gene, scales = "free_y") +
     xlab("MAP pseudotime") + theme_bw()
   return(plt)
+}
+
+#' Plot heatmaps showing comparisons of measured data and imputed
+#' 
+#' @param return_plotlist If TRUE then the list of \code{ggplot}s is returned
+#' instead of being plotted with \code{cowplot::plot_grid}
+#' 
+#' @export
+#' @import ggplot2
+#' 
+#' @return Either a list of plots of class \code{ggplot} or a single 
+#' \code{ggplot} showing them
+plot_bnlfa_fit_comparison <- function(bm, return_plotlist = FALSE) {
+  stopifnot(is(bm, "bnlfa_fit"))
+  X <- bm$Y
+  Z <- rexprs(bm)
+  tmap <- map_pseudotime(bm)
+  
+  make_tile_plot <- function(X, tmap) {
+    Xp <- apply(X, 2, function(x) (x - min(x)) / (max(x) - min(x)))
+    
+    dfx <- data.frame(Xp, pseudotime = rank(tmap)) %>%
+      melt(id.vars = "pseudotime", variable.name = "gene", value.name = "expression")
+    ggplot(dfx, aes(x = pseudotime, y = gene, fill = expression)) + 
+      geom_tile() + scale_fill_viridis(name = expression("Relative\nexpression")) + 
+      theme_bw() + 
+      theme(axis.line = element_blank(),
+            panel.grid = element_blank(),
+            panel.border = element_blank(),
+            axis.title.y = element_blank()) +
+      xlab("Pseudotime order")
+  }
+  plts <- lapply(list(X, Z), make_tile_plot, tmap)
+  if(return_plotlist) return(plts)
+  cowplot::plot_grid(plotlist = plts, nrow = 2, 
+                     labels = c("Measured", "Reconstructed"))
 }
 
 #' Synthetic gene expression matrix

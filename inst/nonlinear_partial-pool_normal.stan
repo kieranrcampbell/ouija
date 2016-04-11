@@ -56,9 +56,7 @@ transformed parameters {
         ysd[g][i] <- one_over_sqrt_tau[g];
       }
     }
-    
   }
-  
 }
 
 model {
