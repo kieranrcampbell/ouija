@@ -15,6 +15,8 @@ devtools::install_github("kieranrcampbell/bnlfa")
 
 ### Model fitting
 
+Input gene expression matrices should be positive and represent logged gene expression values. We recommend using `log2(TPM + 1)`.
+
 ```R
 ## Using gene expression matrix Y, specify direction (off or on)
 ## of each gene using 'sign_bits' (-1 -> off, 1 -> on)
