@@ -317,6 +317,7 @@ tsigmoid <- function(mu0, k, t0, t) {
 #' @param bm An object of class \code{bnlfa_fit}
 #' @param genes A vector that subsets the gene expression matrix. Defaults to the first \code{g}
 #' genes, where \code{g} is either 4 or the number of genes in the model if less than 4.
+#' @param expression_units Units for expression to be displayed in along y-axis.
 #' 
 #' @importFrom reshape2 melt
 #' @importFrom rstan extract
@@ -328,9 +329,11 @@ tsigmoid <- function(mu0, k, t0, t) {
 #' @export
 #' 
 #' @return An object of class \code{ggplot2}
-plot_bnlfa_fit_map <- function(bm, genes = seq_len(min(bm$G, 4))) {
+plot_bnlfa_fit_map <- function(bm, genes = seq_len(min(bm$G, 4)),
+                               expression_units = "log2(TPM+1)") {
   stopifnot(is(bm, "bnlfa_fit"))
   tmap <- map_pseudotime(bm)
+  Y <- bm$Y
   
   ## want to plot sigmoid function so need MAP estimates
   extr <- extract(bm$fit, pars = c("mu0", "k", "t0"))
@@ -341,7 +344,7 @@ plot_bnlfa_fit_map <- function(bm, genes = seq_len(min(bm$G, 4))) {
   names(sig_map) <- colnames(Y)
   
   ## Create data frame for gene expression values
-  Y <- bm$Y[,genes]
+  Y <- Y[,genes]
   dy <- data.frame(Y, pseudotime = tmap)
   dm <- melt(dy, id.vars = "pseudotime", 
              variable.name = "gene", 
@@ -358,7 +361,7 @@ plot_bnlfa_fit_map <- function(bm, genes = seq_len(min(bm$G, 4))) {
   plt <- ggplot(dm_joined, aes(x = pseudotime, y = expression, colour = "Measured")) + 
     geom_point() +
     facet_wrap(~ gene, scales = "free_y") +
-    xlab("MAP pseudotime") + ylab("Expression") + theme_bw()
+    xlab("MAP pseudotime") + ylab(paste("Expression", expression_units)) + theme_bw()
   plt <- plt + 
     geom_line(aes(x = pseudotime, y = predicted_expression, color = 'Predicted'), 
               size = 2, alpha = 0.7) +
