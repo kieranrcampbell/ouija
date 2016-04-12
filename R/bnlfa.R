@@ -303,6 +303,11 @@ plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = seq_len(min(bm$G, 4))
   }
 }
 
+#' Generic function to return sigmoid whenever needed
+tsigmoid <- function(mu0, k, t0, t) {
+  return( 2 * mu0 / (1 + exp(-k*(t - t0))))
+}
+
 #' Plot gene expression as a function of MAP pseudotime
 #' 
 #' Plot gene expression as a function of the MAP pseudotime with a red
@@ -314,6 +319,10 @@ plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = seq_len(min(bm$G, 4))
 #' genes, where \code{g} is either 4 or the number of genes in the model if less than 4.
 #' 
 #' @importFrom reshape2 melt
+#' @importFrom rstan extract
+#' @importFrom MCMCglmm posterior.mode
+#' @importFrom coda mcmc
+#' @importFrom dplyr inner_join
 #' @import ggplot2
 #' 
 #' @export
@@ -322,15 +331,40 @@ plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = seq_len(min(bm$G, 4))
 plot_bnlfa_fit_map <- function(bm, genes = seq_len(min(bm$G, 4))) {
   stopifnot(is(bm, "bnlfa_fit"))
   tmap <- map_pseudotime(bm)
+  
+  ## want to plot sigmoid function so need MAP estimates
+  extr <- extract(bm$fit, pars = c("mu0", "k", "t0"))
+  mu0_map <- posterior.mode(mcmc(extr$mu0))
+  k_map <- posterior.mode(mcmc(extr$k))
+  t0_map <- posterior.mode(mcmc(extr$t0))
+  sig_map <- data.frame(mapply(tsigmoid, mu0_map, k_map, t0_map, MoreArgs = list(t = tmap)))
+  names(sig_map) <- colnames(Y)
+  
+  ## Create data frame for gene expression values
   Y <- bm$Y[,genes]
   dy <- data.frame(Y, pseudotime = tmap)
   dm <- melt(dy, id.vars = "pseudotime", 
-                               variable.name = "gene", 
-                               value.name = "expression")
-  plt <- ggplot(dm, aes(x = pseudotime, y = expression)) + geom_point() +
-    geom_smooth(colour = "red") + facet_wrap(~ gene, scales = "free_y") +
-    xlab("MAP pseudotime") + theme_bw()
-  return(plt)
+             variable.name = "gene", 
+             value.name = "expression")
+  
+  S <- sig_map[,genes]
+  ds <- data.frame(S, pseudotime = tmap)
+  dm2 <- melt(ds, id.vars = "pseudotime",
+              variable.name = "gene",
+              value.name = "predicted_expression")
+  
+  dm_joined <- inner_join(dm, dm2, by = c("pseudotime", "gene"))
+  
+  plt <- ggplot(dm_joined, aes(x = pseudotime, y = expression, colour = "Measured")) + 
+    geom_point() +
+    facet_wrap(~ gene, scales = "free_y") +
+    xlab("MAP pseudotime") + ylab("Expression") + theme_bw()
+  plt <- plt + 
+    geom_line(aes(x = pseudotime, y = predicted_expression, color = 'Predicted'), 
+              size = 2, alpha = 0.7) +
+    scale_colour_manual(values = c("Predicted" = "red", "Measured" = "black"), name = element_blank()) +
+    theme(legend.position = "bottom")
+  return( plt )
 }
 
 #' Plot heatmaps showing comparisons of measured data and imputed
