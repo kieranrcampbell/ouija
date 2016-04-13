@@ -4,7 +4,7 @@
 \alias{plot_bnlfa_fit_map}
 \title{Plot gene expression as a function of MAP pseudotime}
 \usage{
-plot_bnlfa_fit_map(bm, genes = seq_len(min(bm$G, 4)),
+plot_bnlfa_fit_map(bm, genes = seq_len(min(bm$G, 6)),
   expression_units = "log2(TPM+1)")
 }
 \arguments{

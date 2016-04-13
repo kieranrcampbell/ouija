@@ -174,26 +174,6 @@ rexprs.bnlfa_fit <- function(bm) {
   return(Z)
 }
 
-#' @export
-fit_rss <- function(bm) {
-  stopifnot(is(bm, "bnlfa_fit"))
-  Z <- rexprs(bm)
-  RSS <- colSums((bm$Y - Z)^2) / (bm$N - 1)
-  return(RSS)
-}
-
-#' @export
-#' @importFrom matrixStats colVars
-fit_f_test <- function(bm, prop_trim = 0.5) {
-  stopifnot(is(bm, "bnlfa_fit"))
-  F_stat <- fit_rss(bm) / colVars(bm$Y)
-  p_vals <- pf(F_stat, df1 = bm$N, df2 = bm$N)
-  np <- floor(length(p_vals) * prop_trim)
-  trimmed_p_vals <- sort(p_vals, decreasing = TRUE)[seq_len(np)]
-  p_val <- pchisq(-2 * sum(log(trimmed_p_vals)), df = 2 * np, lower.tail = F)
-  return( p_val )
-}
-
 
 #' Print a \code{bnlfa_fit}
 #' 
@@ -285,7 +265,7 @@ plot_bnlfa_fit_diagnostics <- function(bm, arrange = c("vertical", "horizontal")
 #' @export
 #' 
 #' @return A \code{ggplot2} object.
-plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = seq_len(min(bm$G, 4)),
+plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = seq_len(min(bm$G, 6)),
                                  output = c("grid", "plotlist"), 
                                  show_legend = FALSE, ...) {
   stopifnot(is(bm, "bnlfa_fit"))
@@ -350,7 +330,7 @@ tsigmoid <- function(mu0, k, t0, t) {
 #' @export
 #' 
 #' @return An object of class \code{ggplot2}
-plot_bnlfa_fit_map <- function(bm, genes = seq_len(min(bm$G, 4)),
+plot_bnlfa_fit_map <- function(bm, genes = seq_len(min(bm$G, 6)),
                                expression_units = "log2(TPM+1)") {
   stopifnot(is(bm, "bnlfa_fit"))
   tmap <- map_pseudotime(bm)
