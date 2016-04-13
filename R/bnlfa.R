@@ -80,7 +80,7 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
   if(prior == "normal") {
     if(is.null(k_means)) k_means = rep(0, G)
     if(is.null(k_sd)) k_sd <- rep(1, G)
-    if(is.null(t0_means)) t0_means <- rep(0, G) ## change if constrained
+    if(is.null(t0_means)) t0_means <- rep(0.5, G) ## change if constrained
     if(is.null(t0_sd)) t0_sd <- rep(1, G)
   }
   

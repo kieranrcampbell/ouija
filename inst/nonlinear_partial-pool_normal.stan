@@ -34,8 +34,8 @@ parameters {
   real<lower = 0> nu;
   real<lower = 0> mu_hyper;
   
-  //real<lower = 0, upper = 1> t[N]; // pseudotime of each cell
-  real t[N];
+  real<lower = 0, upper = 1> t[N]; // pseudotime of each cell
+  //real t[N];
   
   real<lower = 0, upper = 1> theta[G];
 }
@@ -72,7 +72,7 @@ model {
   tau ~ gamma(nu / 2, 0.5);
   nu ~ exponential(lambda);
   //t ~ normal(0.5, 1);
-  t ~ normal(0, 1);
+  t ~ normal(0.5, 1);
   
   for(g in 1:G) {
     theta[g] ~ beta(2,2);
