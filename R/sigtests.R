@@ -10,15 +10,16 @@ fit_rss <- function(bm) {
   return(RSS)
 }
 
+#' @param ntrim Number of genes to retain (defaults to G / 2)
 #' @export
 #' @importFrom matrixStats colVars
-fit_f_test <- function(bm, prop_trim = 0.5) {
+fit_f_test <- function(bm, nkeep = NULL) {
   stopifnot(is(bm, "bnlfa_fit"))
   F_stat <- fit_rss(bm) / colVars(bm$Y)
   p_vals <- pf(F_stat, df1 = bm$N - 1, df2 = bm$N - 1)
-  np <- floor(length(p_vals) * prop_trim)
-  trimmed_p_vals <- sort(p_vals, decreasing = TRUE)[seq_len(np)]
-  p_val <- pchisq(-2 * sum(log(trimmed_p_vals)), df = 2 * np, lower.tail = F)
+  if(is.null(nkeep)) nkeep <- floor(0.5 * length(p_vals))
+  trimmed_p_vals <- sort(p_vals, decreasing = TRUE)[seq_len(nkeep)]
+  p_val <- pchisq(-2 * sum(log(trimmed_p_vals)), df = 2 * nkeep, lower.tail = F)
   return( p_val )
 }
 
