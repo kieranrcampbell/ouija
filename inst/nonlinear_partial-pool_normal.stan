@@ -37,7 +37,9 @@ parameters {
   real<lower = 0, upper = 1> t[N]; // pseudotime of each cell
   //real t[N];
   
-  real<lower = 0, upper = 1> theta[G];
+  // real<lower = 0, upper = 1> theta[G];
+  //real<lower = 0, upper = 1> theta[N];
+  real beta[2];
 }
 
 transformed parameters {
@@ -74,17 +76,34 @@ model {
   //t ~ normal(0.5, 1);
   t ~ normal(0.5, 1);
   
+  // for(i in 1:N) theta[i] ~ beta(2, 2);
+  
+  // // Zero inflation per-gene
+  // for(g in 1:G) {
+  //   for(i in 1:N) {
+  //     if(Y[g][i] == 0) {
+  //       increment_log_prob(log_sum_exp(bernoulli_log(1, theta[i]),
+  //       bernoulli_log(0, theta[i]) + student_t_log(Y[g][i], 2, mu[g][i], ysd[g][i])));
+  //     } else {
+  //       increment_log_prob(bernoulli_log(0, theta[i]) +
+  //       student_t_log(Y[g][i], 2, mu[g][i], ysd[g][i]));
+  //     }
+  //   }
+  // }
+  
+  beta ~ normal(0, 0.1);
+  
+  // Zero inflation per-mean
   for(g in 1:G) {
-    theta[g] ~ beta(2,2);
     for(i in 1:N) {
       if(Y[g][i] == 0) {
-        increment_log_prob(log_sum_exp(bernoulli_log(1, theta[g]),
-        bernoulli_log(0, theta[g]) + student_t_log(Y[g][i], 2, mu[g][i], ysd[g][i])));
+        increment_log_prob(log_sum_exp(bernoulli_logit_log(1, beta[1] + beta[2] * mu[g][i]),
+        bernoulli_logit_log(0, beta[1] + beta[2] * mu[g][i]) + 
+        student_t_log(Y[g][i], 2, mu[g][i], ysd[g][i])));
       } else {
-        increment_log_prob(bernoulli_log(0, theta[g]) +
+        increment_log_prob(bernoulli_logit_log(0, beta[1] + beta[2] * mu[g][i]) + 
         student_t_log(Y[g][i], 2, mu[g][i], ysd[g][i]));
       }
     }
-    
   }
 }

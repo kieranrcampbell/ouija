@@ -318,7 +318,6 @@ tsigmoid <- function(mu0, k, t0, t) {
 #' @param bm An object of class \code{bnlfa_fit}
 #' @param genes A vector that subsets the gene expression matrix. Defaults to the first \code{g}
 #' genes, where \code{g} is either 4 or the number of genes in the model if less than 4.
-#' @param expression_units Units for expression to be displayed in along y-axis.
 #' 
 #' @importFrom reshape2 melt
 #' @importFrom rstan extract
@@ -336,6 +335,7 @@ plot_bnlfa_fit_map <- function(bm, genes = seq_len(min(bm$G, 6)),
   tmap <- map_pseudotime(bm)
   Y <- bm$Y
   
+
   ## want to plot sigmoid function so need MAP estimates
   extr <- extract(bm$fit, pars = c("mu0", "k", "t0"))
   mu0_map <- posterior.mode(mcmc(extr$mu0))
@@ -343,6 +343,7 @@ plot_bnlfa_fit_map <- function(bm, genes = seq_len(min(bm$G, 6)),
   t0_map <- posterior.mode(mcmc(extr$t0))
   sig_map <- data.frame(mapply(tsigmoid, mu0_map, k_map, t0_map, MoreArgs = list(t = tmap)))
   names(sig_map) <- colnames(Y)
+
   
   ## Create data frame for gene expression values
   Y <- Y[,genes]
