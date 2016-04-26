@@ -199,18 +199,22 @@ print.bnlfa_fit <- function(bm) {
 #' \code{\link{plot_bnlfa_fit_map}}
 #' \item \code{diagnostic} This returns trace and autocorrelation plots of the log-posterior
 #' probability. Underlying call is to \code{\link{plot_bnlfa_fit_diagnostics}}
+#' \item \code{dropout} Returns a plot showing the relationship between latent expression
+#' value and dropout probability. 
+#' Underlying call is to \code{\link{plot_bnlfa_fit_dropout_probability}}
 #' }
 #' @param ... Additional arguments passed to the corresponding functions
 #' 
 #' @return A \code{ggplot2} plot.
 #' 
 #' @export
-plot.bnlfa_fit <- function(bm, what = c("trace", "map", "diagnostic"), ...) {
+plot.bnlfa_fit <- function(bm, what = c("trace", "map", "diagnostic", "dropout"), ...) {
   what <- match.arg(what)
   plt <- switch(what,
                 trace = plot_bnlfa_fit_trace(bm, ...),
                 map = plot_bnlfa_fit_map(bm, ...),
-                diagnostic = plot_bnlfa_fit_diagnostics(bm, ...))
+                diagnostic = plot_bnlfa_fit_diagnostics(bm, ...),
+                dropout = plot_bnlfa_fit_dropout_probability(bm, ...))
   return(plt)
 }
 
@@ -406,6 +410,53 @@ plot_bnlfa_fit_comparison <- function(bm, return_plotlist = FALSE) {
   if(return_plotlist) return(plts)
   cowplot::plot_grid(plotlist = plts, nrow = 2, 
                      labels = c("Measured", "Reconstructed"))
+}
+
+
+#' Plot dropout probability
+#' 
+#' Plot the probability of a dropout as a function of latent expression value. In bnlfa
+#' this is implemented via logit regression, so the probability of dropout is related
+#' to latent expression \eqn{\mu_{ig}} via
+#' \deqn{\frac{1}{1 + \exp(-(\beta_0 + \beta_1 \mu_{ig}))}}
+#' The red curve shows the MAP estimate of the relationship, while the grey lines show 
+#' posterior samples of the relationship.
+#' 
+#' @param bm An object of class \code{bnlfa_fit}
+#' @param posterior_samples Number of posterior samples to add to the plot. If 0, only
+#' the MAP estimate is plotted.
+#' 
+#' @importFrom rstan extract
+#' @importFrom MCMCglmm posterior.mode
+#' @importFrom coda mcmc
+#' @export
+#' 
+#' @return An object of type \code{ggplot}
+plot_bnlfa_fit_dropout_probability <- function(bm, posterior_samples = 40) {
+  stopifnot(is(bm, "bnlfa_fit"))
+  x_range <- range(as.vector(bm$Y))
+  dsig <- function(x, beta0, beta1) 1 / (1 + exp(-(beta0 + beta1 * x)))
+  ext <- extract(bm$fit, "beta")
+  beta_map <- posterior.mode(mcmc(ext$beta))
+  
+  plt <- ggplot(data.frame(Mean_expression = x_range), aes(x = Mean_expression)) 
+
+
+  if(posterior_samples > 0) {
+    total_samples <- dim(ext$beta)[1]
+    to_sample <- sample(total_samples, posterior_samples)
+    for(i in seq_len(posterior_samples)) {
+      beta <- ext$beta[to_sample[i], ]
+      plt <- plt + stat_function(fun = dsig, 
+                                 args = list(beta0 = beta[1], beta1 = beta[2]),
+                                 alpha = 0.3)
+    }
+  }
+  plt <- plt + stat_function(fun = dsig, 
+                args = list(beta0 = beta_map[1], beta1 = beta_map[2]),
+                colour = "red") +
+    ylab("Dropout probability") + xlab("Latent expression")
+  return( plt )
 }
 
 #' Synthetic gene expression matrix

@@ -4,7 +4,7 @@
 \alias{plot.bnlfa_fit}
 \title{Plot a \code{bnlfa_fit}}
 \usage{
-plot.bnlfa_fit(bm, what = c("trace", "map", "diagnostic"), ...)
+plot.bnlfa_fit(bm, what = c("trace", "map", "diagnostic", "dropout"), ...)
 }
 \arguments{
 \item{bm}{An object of class \code{bnlfa_fit}}
@@ -18,6 +18,9 @@ line denoting a LOESS fit (showing the overall trend). Underlying call is to
 \code{\link{plot_bnlfa_fit_map}}
 \item \code{diagnostic} This returns trace and autocorrelation plots of the log-posterior
 probability. Underlying call is to \code{\link{plot_bnlfa_fit_diagnostics}}
+\item \code{dropout} Returns a plot showing the relationship between latent expression
+value and dropout probability. 
+Underlying call is to \code{\link{plot_bnlfa_fit_dropout_probability}}
 }}
 
 \item{...}{Additional arguments passed to the corresponding functions}

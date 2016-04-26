@@ -12,8 +12,6 @@ plot_bnlfa_fit_map(bm, genes = seq_len(min(bm$G, 6)),
 
 \item{genes}{A vector that subsets the gene expression matrix. Defaults to the first \code{g}
 genes, where \code{g} is either 4 or the number of genes in the model if less than 4.}
-
-\item{expression_units}{Units for expression to be displayed in along y-axis.}
 }
 \value{
 An object of class \code{ggplot2}
