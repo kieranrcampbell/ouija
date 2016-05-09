@@ -34,7 +34,7 @@
 #' 
 #' @return An object of type \code{bnlfa_fit}
 bnlfa <- function(x, response = c("nonlinear", "linear"),
-                  noise_pooling = c("partial-pool", "pool", "none"),
+                  noise_pooling = c("lv", "partial-pool", "pool", "none"),
                   prior = c("normal", "sign"),
                   init = "random",
                   model_mean_variance = TRUE,
@@ -56,10 +56,16 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
   model_name <- paste(response, noise, prior, sep = "_")
   if(model_name != "nonlinear_partial-pool_normal" &&
      model_name != "nonlinear_none_normal" &&
-     model_name != "nonlinear_partial-pool_sign") { # REMOVE WHEN MODELS IMPLEMENTED
+     model_name != "nonlinear_partial-pool_sign" &&
+     model_name != "nonlinear_lv_normal") { # REMOVE WHEN MODELS IMPLEMENTED
     stop("Only nl-pp-n currently supported")
   }
-  model_file <- paste0(model_name, ".stan")
+  
+  if(noise == "lv") {
+    model_file <- "lv.stan"
+  } else {
+    model_file <- paste0(model_name, ".stan")
+  }
   
   Y <- NULL
   if(is(x, "SCESet")) {
@@ -82,9 +88,7 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
     if(is.null(k_sd)) k_sd <- rep(1, G)
     if(is.null(t0_means)) t0_means <- rep(0.5, G) ## change if constrained
     if(is.null(t0_sd)) t0_sd <- rep(1, G)
-  }
-  
-  if(prior == "normal") {
+
     stopifnot(length(k_means) == G)
     stopifnot(length(k_sd) == G)
     if(response == "nonlinear") { # now we have t0 parameters

@@ -5,10 +5,10 @@
 \title{Fit a BNLFA object.}
 \usage{
 bnlfa(x, response = c("nonlinear", "linear"),
-  noise_pooling = c("partial-pool", "pool", "none"), prior = c("normal",
-  "sign"), init = "random", model_mean_variance = TRUE, sign_bits = NULL,
-  k_means = NULL, t0_means = NULL, k_sd = NULL, t0_sd = NULL,
-  lambda = 1, ...)
+  noise_pooling = c("partial-pool", "pool", "none", "lv"),
+  prior = c("normal", "sign"), init = "random",
+  model_mean_variance = TRUE, sign_bits = NULL, k_means = NULL,
+  t0_means = NULL, k_sd = NULL, t0_sd = NULL, lambda = 1, ...)
 }
 \arguments{
 \item{x}{Either an \code{SCESet} from \code{scater} or a
