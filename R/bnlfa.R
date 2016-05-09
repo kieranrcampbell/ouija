@@ -465,11 +465,13 @@ plot_bnlfa_fit_dropout_probability <- function(bm, posterior_samples = 40) {
 
 #' Synthetic gene expression matrix
 #' 
-#' A matrix containing some synthetic gene expression data for 100 cells and 3 genes
+#' A matrix containing some synthetic gene expression data for 
+#' 100 cells and 6 genes
 #' 
 "synth_gex"
 
 #' Synthetic gene pseudotimes
 #' 
-#' A vector with the 'true' pseudotimes for the synthetic gene expression data in \code{synth_gex}
+#' A vector with the 'true' pseudotimes for the synthetic 
+#' gene expression data in \code{synth_gex}
 "true_pst"

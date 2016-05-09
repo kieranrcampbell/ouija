@@ -9,7 +9,8 @@
 true_pst
 }
 \description{
-A vector with the 'true' pseudotimes for the synthetic gene expression data in \code{synth_gex}
+A vector with the 'true' pseudotimes for the synthetic 
+gene expression data in \code{synth_gex}
 }
 \keyword{datasets}
 

@@ -4,12 +4,13 @@
 \name{synth_gex}
 \alias{synth_gex}
 \title{Synthetic gene expression matrix}
-\format{An object of class \code{matrix} with 100 rows and 3 columns.}
+\format{An object of class \code{matrix} with 100 rows and 6 columns.}
 \usage{
 synth_gex
 }
 \description{
-A matrix containing some synthetic gene expression data for 100 cells and 3 genes
+A matrix containing some synthetic gene expression data for 
+100 cells and 6 genes
 }
 \keyword{datasets}
 
