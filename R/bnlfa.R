@@ -15,17 +15,19 @@
 #' @param x Either an \code{SCESet} from \code{scater} or a
 #' cell-by-gene (N by G) matrix of non-negative values representing gene expression.
 #' log2(TPM + 1) is recommended.
-#' @param response The type of factor analysis, either \code{nonlinear} (default) 
-#' or \code{linear} 
-#' @param noise_pooling The pooling of the precision parameters, either \code{pool}, \code{partial-pool} 
-#' (default) or \code{none}
-#' @param prior The type of prior specification, either \code{normal} (default) or \code{sign}
-#' @param model_mean_variance Logical. If \code{TRUE} then the variance as modelled as a function of the mean.
-#' @param sign_bits A vector (length G) of sign bits
 #' @param k_means G mean activation strength parameters
 #' @param t0_means G mean activation time parameters
 #' @param k_sd Optional standard deviations for k parameters
 #' @param t0_sd Optional standard deviations for t0 parameters
+#' @param response The type of factor analysis, either \code{nonlinear} (default) 
+#' or \code{linear} 
+#' @param warn_lp BNLFA can perform a crude check of convergence in cases where may
+#' models are being fit and manual inspection may be cumbersome. The log-likelihood after
+#' the burn period is regressed off the iteration number, and if the gradient of the fit
+#' falls above a threshold (set by \code{lp_gradient_threshold}) then the user is warned.
+#' @param lp_gradient_threshold The threshold for convergence warning. If the slope of regressing
+#' the log-probability of the model against the iteration number falls above this value then
+#' the user is warned.
 #' @param ... Additional arguments to \code{rstan::sampling}
 #' 
 #' @import rstan
@@ -33,40 +35,21 @@
 #' @export
 #' 
 #' @return An object of type \code{bnlfa_fit}
-bnlfa <- function(x, response = c("nonlinear", "linear"),
-                  noise_pooling = c("lv", "partial-pool", "pool", "none"),
-                  prior = c("normal", "sign"),
-                  init = "random",
-                  model_mean_variance = TRUE,
-                  sign_bits = NULL, k_means = NULL, t0_means = NULL,
-                  k_sd = NULL, 
-                  t0_sd = NULL,
-                  lambda = 1,
+bnlfa <- function(x, 
+                  k_means = NULL, t0_means = NULL,
+                  k_sd = NULL, t0_sd = NULL,
+                  response = c("nonlinear", "linear"),
+                  warn_lp = TRUE,
+                  lp_gradient_threshold = 1e-2,
                   ...) {
   require(rstan) # for some reason this is required despite the @import rstan
   
   ## Find out what sort of model we're trying to fit
   response <- match.arg(response)
-  noise <- match.arg(noise_pooling)
-  prior <- match.arg(prior)
+  if(response != "linear") stop("Only nonlinear factor analysis currently supported")
   
-  if(!is.logical(model_mean_variance)) stop("Please specify mean_variance as logical")
-  mean_variance <- as.integer(model_mean_variance)
-  
-  model_name <- paste(response, noise, prior, sep = "_")
-  if(model_name != "nonlinear_partial-pool_normal" &&
-     model_name != "nonlinear_none_normal" &&
-     model_name != "nonlinear_partial-pool_sign" &&
-     model_name != "nonlinear_lv_normal") { # REMOVE WHEN MODELS IMPLEMENTED
-    stop("Only nl-pp-n currently supported")
-  }
-  
-  if(noise == "lv") {
-    model_file <- "lv.stan"
-  } else {
-    model_file <- paste0(model_name, ".stan")
-  }
-  
+  model_file <- "ouija.stan"
+
   Y <- NULL
   if(is(x, "SCESet")) {
     ## convert to expression matrix Y  
@@ -83,32 +66,22 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
   N <- nrow(Y) # number of cells
   
   # we can fill in some values if they're null
-  if(prior == "normal") {
-    if(is.null(k_means)) k_means = rep(0, G)
-    if(is.null(k_sd)) k_sd <- rep(1, G)
-    if(is.null(t0_means)) t0_means <- rep(0.5, G) ## change if constrained
-    if(is.null(t0_sd)) t0_sd <- rep(1, G)
+  if(is.null(k_means)) k_means = rep(0, G)
+  if(is.null(k_sd)) k_sd <- rep(1, G)
+  if(is.null(t0_means)) t0_means <- rep(0.5, G) ## change if constrained
+  if(is.null(t0_sd)) t0_sd <- rep(1, G)
 
-    stopifnot(length(k_means) == G)
-    stopifnot(length(k_sd) == G)
-    if(response == "nonlinear") { # now we have t0 parameters
-      stopifnot(length(t0_means) == G)
-      stopifnot(length(t0_sd) == G)
-    }
-  } else {
-    stopifnot(length(sign_bits) == G)
+  stopifnot(length(k_means) == G)
+  stopifnot(length(k_sd) == G)
+  if(response == "nonlinear") { # now we have t0 parameters
+    stopifnot(length(t0_means) == G)
+    stopifnot(length(t0_sd) == G)
   }
-  
+
   ## stan setup
-  ## In a bit of glory for lazy programmers everywhere, rstan doesn't
-  ## throw an error if we include stuff in data list that the model doesn't
-  ## need. So we can fill this with junk for the other models. These can be left as NULL
   data <- list(Y = t(Y), G = G, N = N,
                k_means = k_means, k_sd = k_sd,
-               t0_means = t0_means, t0_sd = t0_sd,
-               lambda = lambda,
-               mean_variance = mean_variance,
-               sign_bits = sign_bits)
+               t0_means = t0_means, t0_sd = t0_sd)
   
   stanfile <- system.file(model_file, package = "bnlfa")
   model <- stan_model(stanfile)
@@ -129,7 +102,17 @@ bnlfa <- function(x, response = c("nonlinear", "linear"),
   ## call sampling
   fit <- do.call(sampling, stanargs)
   
-
+  ## Do a really dumb automated check of convergence:
+  if(warn_lp) {
+    lp <- extract(fit, pars = "lp__")$lp__
+    siter <- seq_along(lp)
+    lplm <- lm(lp ~ siter)
+    if(coef(lmlp)[2] > lp_gradient_threshold) {
+      warning(paste("Gradient of log-probability against iteration greater than threshold: "), coef(lmlp)[2])
+      warning("Model may not be converged")
+    }
+  }
+    
   bm <- structure(list(fit = fit, G = G, N = N, Y = Y,
                        iter = stanargs$iter, chains = stanargs$chains,
                        thin = stanargs$thin, model_name = model_name), 

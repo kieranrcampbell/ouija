@@ -4,28 +4,14 @@
 \alias{bnlfa}
 \title{Fit a BNLFA object.}
 \usage{
-bnlfa(x, response = c("nonlinear", "linear"), noise_pooling = c("lv",
-  "partial-pool", "pool", "none"), prior = c("normal", "sign"),
-  init = "random", model_mean_variance = TRUE, sign_bits = NULL,
-  k_means = NULL, t0_means = NULL, k_sd = NULL, t0_sd = NULL,
-  lambda = 1, ...)
+bnlfa(x, k_means = NULL, t0_means = NULL, k_sd = NULL, t0_sd = NULL,
+  response = c("nonlinear", "linear"), warn_lp = TRUE,
+  lp_gradient_threshold = 0.01, ...)
 }
 \arguments{
 \item{x}{Either an \code{SCESet} from \code{scater} or a
 cell-by-gene (N by G) matrix of non-negative values representing gene expression.
 log2(TPM + 1) is recommended.}
-
-\item{response}{The type of factor analysis, either \code{nonlinear} (default) 
-or \code{linear}}
-
-\item{noise_pooling}{The pooling of the precision parameters, either \code{pool}, \code{partial-pool} 
-(default) or \code{none}}
-
-\item{prior}{The type of prior specification, either \code{normal} (default) or \code{sign}}
-
-\item{model_mean_variance}{Logical. If \code{TRUE} then the variance as modelled as a function of the mean.}
-
-\item{sign_bits}{A vector (length G) of sign bits}
 
 \item{k_means}{G mean activation strength parameters}
 
@@ -34,6 +20,18 @@ or \code{linear}}
 \item{k_sd}{Optional standard deviations for k parameters}
 
 \item{t0_sd}{Optional standard deviations for t0 parameters}
+
+\item{response}{The type of factor analysis, either \code{nonlinear} (default) 
+or \code{linear}}
+
+\item{warn_lp}{BNLFA can perform a crude check of convergence in cases where may
+models are being fit and manual inspection may be cumbersome. The log-likelihood after
+the burn period is regressed off the iteration number, and if the gradient of the fit
+falls above a threshold (set by \code{lp_gradient_threshold}) then the user is warned.}
+
+\item{lp_gradient_threshold}{The threshold for convergence warning. If the slope of regressing
+the log-probability of the model against the iteration number falls above this value then
+the user is warned.}
 
 \item{...}{Additional arguments to \code{rstan::sampling}}
 }
