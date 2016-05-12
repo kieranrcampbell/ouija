@@ -1,55 +1,64 @@
-# BNLFA
+# Ouija
 
 R package for Bayesian non-linear factor analysis for incorporating prior knowledge in single-cell trajectory learning.
 
-Full vignette can be found [here](http://kieranrcampbell.github.io/bnlfa).
+Full vignette can be found [here](http://kieranrcampbell.github.io/ouija).
 
-## Installation
+## Getting started
+
+### Installation
 
 ```R
 # install.packages("devtools")
-devtools::install_github("kieranrcampbell/bnlfa")
+devtools::install_github("kieranrcampbell/ouija")
 ```
-
-## Usage
 
 ### Model fitting
 
 Input is a cell-by-gene expression matrices that is non-negative and represents logged gene expression values. We recommend using `log2(TPM + 1)`.
 
 ```R
-## Using gene expression matrix Y, specify direction (off or on)
-## of each gene using 'sign_bits' (-1 -> off, 1 -> on)
-sign_bits <- c(-1, 1, -1, 1)
+library(ouija)
+data(synth_gex) # synthetic gene expression data bundled
+```
 
-bm <- bnlfa(Y, prior = "sign", sign_bits = sign_bits)
+Prior expectations in Ouija are encoded by whether we expect genes to turn on or
+off along the trajectory through the `k_means` parameter, with one for each gene.
+A positive value implies the gene will turn on over pseudotime while a negative
+value implies the gene switches off. The magnitude indicates how quickly
+we expect this to happen.
+
+```
+k_means = 5 * c(1, -1, 1, -1, -1, -1)
+oui <- ouija(synth_gex, k_means)
 ```
 
 ### Plotting
 
-Plot diagnostics:
+Since we've performed MCMC inference we should check the convergence:
 
 ```R
-plot(bm, what = "diagnostic")
+plot(oui, what = "diagnostic")
 ```
 
-![Diganostic plot](inst/www/diagnostic_plot_small.png)
+![Diagnostic plot](inst/www/diagnostic.png)
 
-Plot MAP gene behaviour:
+We can then plot the gene behaviour at the MAP pseudotime estimates:
 
 ```R
-plot(bm, what = "map")
+plot(oui, what = "map")
 ```
 
-![MAP plot](inst/www/map_plot_small.png)
+![MAP plot](inst/www/map.png)
 
-Plot pseudotime trace heatmap:
+An informative way to understand the uncertainty in the ordering is to look at
+the gene expression trace plot:
 
 ```R
-plot(bm, what = "trace")
+plot(oui, what = "trace")
 ```
 
-![Trace plot](inst/www/trace_plot_small.png)
+![Trace plot](inst/www/trace.png)
 
 
 

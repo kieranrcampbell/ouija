@@ -10,15 +10,13 @@ data {
   
   real t0_means[G]; // mean parameters for t0 provided by user
   real t0_sd[G]; // standard deviation parameters for t0 provided by user
-
-  real<lower = 0> lambda; // hyper-hyper parameter for nu
 }
 
 parameters {
   // parameters we'll let stan infer
   real<lower = 0> mu0[G];
   
-  real<lower = 0> tau; // mean-variance parameter [G]; // precision
+  real<lower = 0> phi; // mean-variance "overdispersion" parameter 
   
   // parameters with user-defined priors
   real k[G];
@@ -38,7 +36,7 @@ transformed parameters {
   for(g in 1:G) {
     for(i in 1:N) {
       mu[g][i] <- 2 * mu0[g] / (1 + exp(-k[g] * (t[i] - t0[g])));
-      ysd[g][i] <- sqrt( (1 + tau) * mu[g][i] + 0.01);
+      ysd[g][i] <- sqrt( (1 + phi) * mu[g][i] + 0.01);
     }
   }
 }
@@ -53,7 +51,7 @@ model {
   
   /* Try tau ~ chi-sq(nu) using gamma approximation. See
   http://www.stat.umn.edu/geyer/old03/5102/notes/brand.pdf */
-  tau ~ gamma(12, 4); 
+  phi ~ gamma(12, 4); 
   
   t ~ normal(0.5, 1);
 

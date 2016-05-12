@@ -3,13 +3,13 @@
 ## kieranc@well.ox.ac.uk
 
 
-#' Fit a BNLFA object.
+#' Fit a Ouija object.
 #' 
 #' Fit a Bayesian non-linear factor analysis model given some single-cell
 #' gene expression data.
 #' 
 #' This function takes either a \code{SCESet} object or an expression matrix
-#' and returns a \code{bnlfa_fit} object including posterior traces for all
+#' and returns a \code{ouija_fit} object including posterior traces for all
 #' variables.
 #' 
 #' @param x Either an \code{SCESet} from \code{scater} or a
@@ -21,7 +21,7 @@
 #' @param t0_sd Optional standard deviations for t0 parameters
 #' @param response The type of factor analysis, either \code{nonlinear} (default) 
 #' or \code{linear} 
-#' @param warn_lp BNLFA can perform a crude check of convergence in cases where may
+#' @param warn_lp Ouija can perform a crude check of convergence in cases where may
 #' models are being fit and manual inspection may be cumbersome. The log-likelihood after
 #' the burn period is regressed off the iteration number, and if the gradient of the fit
 #' falls above a threshold (set by \code{lp_gradient_threshold}) then the user is warned.
@@ -34,8 +34,8 @@
 #' 
 #' @export
 #' 
-#' @return An object of type \code{bnlfa_fit}
-bnlfa <- function(x, 
+#' @return An object of type \code{ouija_fit}
+ouija <- function(x, 
                   k_means = NULL, t0_means = NULL,
                   k_sd = NULL, t0_sd = NULL,
                   response = c("nonlinear", "linear"),
@@ -46,7 +46,7 @@ bnlfa <- function(x,
   
   ## Find out what sort of model we're trying to fit
   response <- match.arg(response)
-  if(response != "linear") stop("Only nonlinear factor analysis currently supported")
+  if(response != "nonlinear") stop("Only nonlinear factor analysis currently supported")
   
   model_file <- "ouija.stan"
 
@@ -83,7 +83,7 @@ bnlfa <- function(x,
                k_means = k_means, k_sd = k_sd,
                t0_means = t0_means, t0_sd = t0_sd)
   
-  stanfile <- system.file(model_file, package = "bnlfa")
+  stanfile <- system.file(model_file, package = "ouija")
   model <- stan_model(stanfile)
   
   ## manipulate stan defaults
@@ -97,7 +97,6 @@ bnlfa <- function(x,
   }
   stanargs$object <- model
   stanargs$data <- data
-  stanargs$init <- init
   
   ## call sampling
   fit <- do.call(sampling, stanargs)
@@ -107,7 +106,7 @@ bnlfa <- function(x,
     lp <- extract(fit, pars = "lp__")$lp__
     siter <- seq_along(lp)
     lplm <- lm(lp ~ siter)
-    if(coef(lmlp)[2] > lp_gradient_threshold) {
+    if(coef(lplm)[2] > lp_gradient_threshold) {
       warning(paste("Gradient of log-probability against iteration greater than threshold: "), coef(lmlp)[2])
       warning("Model may not be converged")
     }
@@ -115,12 +114,12 @@ bnlfa <- function(x,
     
   bm <- structure(list(fit = fit, G = G, N = N, Y = Y,
                        iter = stanargs$iter, chains = stanargs$chains,
-                       thin = stanargs$thin, model_name = model_name), 
-                  class = "bnlfa_fit")
+                       thin = stanargs$thin), 
+                  class = "ouija_fit")
   return(bm)
 }
 
-#' Extract the MAP pseudotime values from a \code{bnlfa_fit}
+#' Extract the MAP pseudotime values from a \code{ouija_fit}
 #' 
 #' @importFrom MCMCglmm posterior.mode
 #' @importFrom rstan extract
@@ -131,7 +130,7 @@ bnlfa <- function(x,
 #' @return MAP pseudotime vector of length N
 map_pseudotime <- function(bm) UseMethod("map_pseudotime")
 
-#' Extract the MAP pseudotime values from a \code{bnlfa_fit}
+#' Extract the MAP pseudotime values from a \code{ouija_fit}
 #' 
 #' @importFrom MCMCglmm posterior.mode
 #' @importFrom rstan extract
@@ -140,8 +139,8 @@ map_pseudotime <- function(bm) UseMethod("map_pseudotime")
 #' @export
 #' 
 #' @return MAP pseudotime vector of length N
-map_pseudotime.bnlfa_fit <- function(bm) {
-  stopifnot(is(bm, "bnlfa_fit"))
+map_pseudotime.ouija_fit <- function(bm) {
+  stopifnot(is(bm, "ouija_fit"))
   posterior.mode(mcmc(extract(bm$fit, "t")$t))
 }
 
@@ -153,8 +152,8 @@ rexprs <- function(bm) UseMethod("rexprs")
 #' @importFrom rstan extract
 #' @importFrom coda mcmc
 #' @export
-rexprs.bnlfa_fit <- function(bm) {
-  stopifnot(is(bm, "bnlfa_fit"))
+rexprs.ouija_fit <- function(bm) {
+  stopifnot(is(bm, "ouija_fit"))
   Z <- apply(extract(bm$fit, "mu")$mu, 3, function(x) posterior.mode(mcmc(x)))
   Z <- t(Z)
   colnames(Z) <- colnames(bm$Y)
@@ -162,66 +161,66 @@ rexprs.bnlfa_fit <- function(bm) {
 }
 
 
-#' Print a \code{bnlfa_fit}
+#' Print a \code{ouija_fit}
 #' 
 #' @export
-print.bnlfa_fit <- function(bm) {
-  cat(paste("A Bayesian non-linear factor analysis fit of type", bm$model_name, "with\n"),
+print.ouija_fit <- function(bm) {
+  cat(paste("A Bayesian non-linear factor analysis fit with\n"),
           paste(bm$N, "cells and", bm$G, "marker genes\n"),
           paste("MCMC info:", bm$iter, "iterations on", bm$chains, "chains"))
 }
 
-#' Plot a \code{bnlfa_fit}
+#' Plot a \code{ouija_fit}
 #' 
-#' Plot a \code{bnlfa_fit} object. Returns either a trace fit, MAP fit or MCMC diagnostic fit.
+#' Plot a \code{ouija_fit} object. Returns either a trace fit, MAP fit or MCMC diagnostic fit.
 #' See the individual function calls (described below) for more details.
 #' 
-#' @param bm An object of class \code{bnlfa_fit}
+#' @param bm An object of class \code{ouija_fit}
 #' @param what One of
 #' \itemize{
 #' \item \code{trace} This produces a heatmap of gene expression as a function of pseudotime
-#' across different pseudotime samples. Underlying call is to \code{\link{plot_bnlfa_fit_trace}}.
+#' across different pseudotime samples. Underlying call is to \code{\link{plot_ouija_fit_trace}}.
 #' \item \code{map} This plots gene expression as a function of the MAP pseudotime with a red
 #' line denoting a LOESS fit (showing the overall trend). Underlying call is to
-#' \code{\link{plot_bnlfa_fit_map}}
+#' \code{\link{plot_ouija_fit_map}}
 #' \item \code{diagnostic} This returns trace and autocorrelation plots of the log-posterior
-#' probability. Underlying call is to \code{\link{plot_bnlfa_fit_diagnostics}}
+#' probability. Underlying call is to \code{\link{plot_ouija_fit_diagnostics}}
 #' \item \code{dropout} Returns a plot showing the relationship between latent expression
 #' value and dropout probability. 
-#' Underlying call is to \code{\link{plot_bnlfa_fit_dropout_probability}}
+#' Underlying call is to \code{\link{plot_ouija_fit_dropout_probability}}
 #' }
 #' @param ... Additional arguments passed to the corresponding functions
 #' 
 #' @return A \code{ggplot2} plot.
 #' 
 #' @export
-plot.bnlfa_fit <- function(bm, what = c("trace", "map", "diagnostic", "dropout"), ...) {
+plot.ouija_fit <- function(bm, what = c("trace", "map", "diagnostic", "dropout"), ...) {
   what <- match.arg(what)
   plt <- switch(what,
-                trace = plot_bnlfa_fit_trace(bm, ...),
-                map = plot_bnlfa_fit_map(bm, ...),
-                diagnostic = plot_bnlfa_fit_diagnostics(bm, ...),
-                dropout = plot_bnlfa_fit_dropout_probability(bm, ...))
+                trace = plot_ouija_fit_trace(bm, ...),
+                map = plot_ouija_fit_map(bm, ...),
+                diagnostic = plot_ouija_fit_diagnostics(bm, ...),
+                dropout = plot_ouija_fit_dropout_probability(bm, ...))
   return(plt)
 }
 
 #' Plot MCMC diagnostics.
 #' 
 #' Plot MCMC diagnostics (traceplot and autocorrelation) of the log-posterior probability
-#' for a \code{bnlfa_fit} object.
+#' for a \code{ouija_fit} object.
 #' 
 #' Further assessment of convergence can be done using \code{rstan} functions on the
 #' underlying STAN object (accessed through \code{bm$fit}).
 #' 
-#' @param bm A \code{bnlfa_fit} object
+#' @param bm A \code{ouija_fit} object
 #' @param nrow Number of rows. If 1, plots are side-by-side; if 2, plots are vertically aligned.
 #' @export
 #' @importFrom cowplot plot_grid
 #' 
 #' @return A \code{ggplot2} object
 #' 
-plot_bnlfa_fit_diagnostics <- function(bm, arrange = c("vertical", "horizontal")) {
-  stopifnot(is(bm, "bnlfa_fit"))
+plot_ouija_fit_diagnostics <- function(bm, arrange = c("vertical", "horizontal")) {
+  stopifnot(is(bm, "ouija_fit"))
   arrange <- match.arg(arrange)
   nrow <- switch(arrange,
                  vertical = 2,
@@ -235,7 +234,7 @@ plot_bnlfa_fit_diagnostics <- function(bm, arrange = c("vertical", "horizontal")
 #' Produces a heatmap of gene expression as a function of pseudotime
 #' across different pseudotime samples.
 #' 
-#' @param bm An object of class \code{bnlfa_fit}
+#' @param bm An object of class \code{ouija_fit}
 #' @param samples Number of posterior pseudotime samples to use (number of rows of heatmap)
 #' @param genes A vector that subsets the gene expression matrix. Defaults to the first \code{g}
 #' genes, where \code{g} is either 4 or the number of genes in the model if less than 4.
@@ -256,10 +255,10 @@ plot_bnlfa_fit_diagnostics <- function(bm, arrange = c("vertical", "horizontal")
 #' @export
 #' 
 #' @return A \code{ggplot2} object.
-plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = seq_len(min(bm$G, 6)),
+plot_ouija_fit_trace <- function(bm, samples = 50, genes = seq_len(min(bm$G, 6)),
                                  output = c("grid", "plotlist"), 
                                  show_legend = FALSE, ...) {
-  stopifnot(is(bm, "bnlfa_fit"))
+  stopifnot(is(bm, "ouija_fit"))
   output <- match.arg(output)
   
   ttrace <- extract(bm$fit, "t")$t
@@ -289,7 +288,7 @@ plot_bnlfa_fit_trace <- function(bm, samples = 50, genes = seq_len(min(bm$G, 6))
   })
 
   if(output == "grid") {
-    return(plot_grid(plotlist = plts, ...))
+    return(plot_grid(plotlist = plts, scale = 0.9, ...))
   } else {
     return( plts )
   }
@@ -306,7 +305,7 @@ tsigmoid <- function(mu0, k, t0, t) {
 #' line denoting a LOESS fit (showing the overall trend). Genes are plotted with
 #' one per grid square (using a call to \code{facet_wrap(~ gene)}).
 #' 
-#' @param bm An object of class \code{bnlfa_fit}
+#' @param bm An object of class \code{ouija_fit}
 #' @param genes A vector that subsets the gene expression matrix. Defaults to the first \code{g}
 #' genes, where \code{g} is either 4 or the number of genes in the model if less than 4.
 #' 
@@ -320,9 +319,9 @@ tsigmoid <- function(mu0, k, t0, t) {
 #' @export
 #' 
 #' @return An object of class \code{ggplot2}
-plot_bnlfa_fit_map <- function(bm, genes = seq_len(min(bm$G, 6)),
+plot_ouija_fit_map <- function(bm, genes = seq_len(min(bm$G, 6)),
                                expression_units = "log2(TPM+1)") {
-  stopifnot(is(bm, "bnlfa_fit"))
+  stopifnot(is(bm, "ouija_fit"))
   tmap <- map_pseudotime(bm)
   Y <- bm$Y
   
@@ -373,8 +372,8 @@ plot_bnlfa_fit_map <- function(bm, genes = seq_len(min(bm$G, 6)),
 #' 
 #' @return Either a list of plots of class \code{ggplot} or a single 
 #' \code{ggplot} showing them
-plot_bnlfa_fit_comparison <- function(bm, return_plotlist = FALSE) {
-  stopifnot(is(bm, "bnlfa_fit"))
+plot_ouija_fit_comparison <- function(bm, return_plotlist = FALSE) {
+  stopifnot(is(bm, "ouija_fit"))
   X <- bm$Y
   Z <- rexprs(bm)
   tmap <- map_pseudotime(bm)
@@ -402,14 +401,14 @@ plot_bnlfa_fit_comparison <- function(bm, return_plotlist = FALSE) {
 
 #' Plot dropout probability
 #' 
-#' Plot the probability of a dropout as a function of latent expression value. In bnlfa
+#' Plot the probability of a dropout as a function of latent expression value. In ouija
 #' this is implemented via logit regression, so the probability of dropout is related
 #' to latent expression \eqn{\mu_{ig}} via
 #' \deqn{\frac{1}{1 + \exp(-(\beta_0 + \beta_1 \mu_{ig}))}}
 #' The red curve shows the MAP estimate of the relationship, while the grey lines show 
 #' posterior samples of the relationship.
 #' 
-#' @param bm An object of class \code{bnlfa_fit}
+#' @param bm An object of class \code{ouija_fit}
 #' @param posterior_samples Number of posterior samples to add to the plot. If 0, only
 #' the MAP estimate is plotted.
 #' 
@@ -419,8 +418,8 @@ plot_bnlfa_fit_comparison <- function(bm, return_plotlist = FALSE) {
 #' @export
 #' 
 #' @return An object of type \code{ggplot}
-plot_bnlfa_fit_dropout_probability <- function(bm, posterior_samples = 40) {
-  stopifnot(is(bm, "bnlfa_fit"))
+plot_ouija_fit_dropout_probability <- function(bm, posterior_samples = 40) {
+  stopifnot(is(bm, "ouija_fit"))
   x_range <- range(as.vector(bm$Y))
   dsig <- function(x, beta0, beta1) 1 / (1 + exp(-(beta0 + beta1 * x)))
   ext <- extract(bm$fit, "beta")
