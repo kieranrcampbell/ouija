@@ -42,7 +42,7 @@ ouija <- function(x,
                   warn_lp = TRUE,
                   lp_gradient_threshold = 1e-2,
                   ...) {
-  # require(rstan) # for some reason this is required despite the @import rstan
+  library(rstan) # for some reason this is required despite the @import rstan
   
   ## Find out what sort of model we're trying to fit
   response <- match.arg(response)
