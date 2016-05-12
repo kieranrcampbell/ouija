@@ -7,7 +7,7 @@ Description: Ouija learns trajectories or 'pseudotimes' from single-cell RNA-seq
   nonlinear factor analysis biological knowledge of gene expression across pseudotime can be
   encoded as informative priors in the model.
 Depends: 
-    R (>= 3.2.3)
+    R (>= 3.2.0)
 License: MIT
 LazyData: true
 Imports: 
