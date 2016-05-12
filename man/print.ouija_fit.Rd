@@ -4,7 +4,10 @@
 \alias{print.ouija_fit}
 \title{Print a \code{ouija_fit}}
 \usage{
-\method{print}{ouija_fit}(bm)
+\method{print}{ouija_fit}(x)
+}
+\arguments{
+\item{x}{An object of class \code{ouija_fit}.}
 }
 \description{
 Print a \code{ouija_fit}

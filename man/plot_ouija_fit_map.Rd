@@ -4,11 +4,11 @@
 \alias{plot_ouija_fit_map}
 \title{Plot gene expression as a function of MAP pseudotime}
 \usage{
-plot_ouija_fit_map(bm, genes = seq_len(min(bm$G, 6)),
+plot_ouija_fit_map(oui, genes = seq_len(min(oui$G, 6)),
   expression_units = "log2(TPM+1)")
 }
 \arguments{
-\item{bm}{An object of class \code{ouija_fit}}
+\item{oui}{An object of class \code{ouija_fit}}
 
 \item{genes}{A vector that subsets the gene expression matrix. Defaults to the first \code{g}
 genes, where \code{g} is either 4 or the number of genes in the model if less than 4.}

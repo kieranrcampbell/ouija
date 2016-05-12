@@ -4,9 +4,11 @@
 \alias{plot_ouija_fit_comparison}
 \title{Plot heatmaps showing comparisons of measured data and imputed}
 \usage{
-plot_ouija_fit_comparison(bm, return_plotlist = FALSE)
+plot_ouija_fit_comparison(oui, return_plotlist = FALSE)
 }
 \arguments{
+\item{oui}{An object of class \code{ouija_fit}.}
+
 \item{return_plotlist}{If TRUE then the list of \code{ggplot}s is returned
 instead of being plotted with \code{cowplot::plot_grid}}
 }

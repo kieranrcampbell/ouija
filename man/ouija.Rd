@@ -4,8 +4,8 @@
 \alias{ouija}
 \title{Fit a Ouija object.}
 \usage{
-ouija(x, k_means = NULL, t0_means = NULL, k_sd = NULL, t0_sd = NULL,
-  response = c("nonlinear", "linear"), warn_lp = TRUE,
+ouija(x, strengths = NULL, times = NULL, strength_sd = NULL,
+  time_sd = NULL, response = c("nonlinear", "linear"), warn_lp = TRUE,
   lp_gradient_threshold = 0.01, ...)
 }
 \arguments{
@@ -13,13 +13,13 @@ ouija(x, k_means = NULL, t0_means = NULL, k_sd = NULL, t0_sd = NULL,
 cell-by-gene (N by G) matrix of non-negative values representing gene expression.
 log2(TPM + 1) is recommended.}
 
-\item{k_means}{G mean activation strength parameters}
+\item{strengths}{G mean activation strength parameters}
 
-\item{t0_means}{G mean activation time parameters}
+\item{times}{G mean activation time parameters}
 
-\item{k_sd}{Optional standard deviations for k parameters}
+\item{strength_sd}{Optional standard deviations for k parameters}
 
-\item{t0_sd}{Optional standard deviations for t0 parameters}
+\item{time_sd}{Optional standard deviations for t0 parameters}
 
 \item{response}{The type of factor analysis, either \code{nonlinear} (default) 
 or \code{linear}}

@@ -4,10 +4,10 @@
 \alias{plot_ouija_fit_diagnostics}
 \title{Plot MCMC diagnostics.}
 \usage{
-plot_ouija_fit_diagnostics(bm, arrange = c("vertical", "horizontal"))
+plot_ouija_fit_diagnostics(oui, arrange = c("vertical", "horizontal"))
 }
 \arguments{
-\item{bm}{A \code{ouija_fit} object}
+\item{oui}{A \code{ouija_fit} object}
 
 \item{nrow}{Number of rows. If 1, plots are side-by-side; if 2, plots are vertically aligned.}
 }
@@ -20,6 +20,6 @@ for a \code{ouija_fit} object.
 }
 \details{
 Further assessment of convergence can be done using \code{rstan} functions on the
-underlying STAN object (accessed through \code{bm$fit}).
+underlying STAN object (accessed through \code{oui$fit}).
 }
 

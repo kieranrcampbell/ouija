@@ -1,7 +1,7 @@
 Package: ouija
 Title: Incorporating prior knowledge in single-cell trajectory learning using
     Bayesian nonlinear factor analysis
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: person("Kieran", "Campbell", email = "kieranc@well.ox.ac.uk", role = c("aut", "cre"))
 Description: Ouija learns trajectories or 'pseudotimes' from single-cell RNA-seq data. Using Bayesian 
   nonlinear factor analysis biological knowledge of gene expression across pseudotime can be
@@ -17,7 +17,9 @@ Imports:
     coda,
     cowplot,
     reshape2,
-    viridis
+    viridis,
+    dplyr,
+    matrixStats
 RoxygenNote: 5.0.1
 Suggests: knitr,
     rmarkdown

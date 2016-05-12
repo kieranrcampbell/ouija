@@ -4,7 +4,7 @@
 \alias{rexprs}
 \title{Reconstructed pseudotimes}
 \usage{
-rexprs(bm)
+rexprs(oui)
 }
 \description{
 Reconstructed pseudotimes

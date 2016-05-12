@@ -2,14 +2,17 @@
 % Please edit documentation in R/ouija.R
 \name{map_pseudotime.ouija_fit}
 \alias{map_pseudotime.ouija_fit}
-\title{Extract the MAP pseudotime values from a \code{ouija_fit}}
+\title{Extract the MAP pseudotime estimates from a \code{ouija_fit}}
 \usage{
-\method{map_pseudotime}{ouija_fit}(bm)
+\method{map_pseudotime}{ouija_fit}(oui)
+}
+\arguments{
+\item{oui}{An object of class \code{ouija_fit}.}
 }
 \value{
 MAP pseudotime vector of length N
 }
 \description{
-Extract the MAP pseudotime values from a \code{ouija_fit}
+Extract the MAP pseudotime estimates from a \code{ouija_fit}
 }
 

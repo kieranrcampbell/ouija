@@ -29,8 +29,8 @@ value implies the gene switches off. The magnitude indicates how quickly
 we expect this to happen.
 
 ```
-k_means = 5 * c(1, -1, 1, -1, -1, -1)
-oui <- ouija(synth_gex, k_means)
+strengths = 5 * c(1, -1, 1, -1, -1, -1)
+oui <- ouija(synth_gex, strengths)
 ```
 
 ### Plotting

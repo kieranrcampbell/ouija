@@ -4,11 +4,11 @@
 \alias{plot_ouija_fit_trace}
 \title{Plot heatmaps of gene expression changes}
 \usage{
-plot_ouija_fit_trace(bm, samples = 50, genes = seq_len(min(bm$G, 6)),
+plot_ouija_fit_trace(oui, samples = 50, genes = seq_len(min(oui$G, 6)),
   output = c("grid", "plotlist"), show_legend = FALSE, ...)
 }
 \arguments{
-\item{bm}{An object of class \code{ouija_fit}}
+\item{oui}{An object of class \code{ouija_fit}}
 
 \item{samples}{Number of posterior pseudotime samples to use (number of rows of heatmap)}
 

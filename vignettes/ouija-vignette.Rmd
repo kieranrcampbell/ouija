@@ -1,0 +1,103 @@
+---
+title: "Ouija: Incorporating prior knowledge in single-cell trajectory learning using Bayesian nonlinear factor analysis"
+author: "Kieran Campbell"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+theme_set(theme_bw())
+
+set.seed(1L)
+
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, 
+                      message = FALSE, warning = FALSE,
+                      fig.center = TRUE, fig.width = 6, fig.height = 4)
+```
+
+## Introduction
+
+`Ouija` allows the incorporation of prior biological knowledge into single-cell trajectory learning in a principled, probabilstic manner. This is ideal for the case when the behaviour of a small number of marker genes for a particular pathway is known a-priori and a trajectory for that pathway needs found.
+
+The input to Ouija should be a cell-by-gene expression matrix of non-negative values. We recommend using `log2(TPM + 1)` or `log2(RPKM + 1)` as this is what the mean-variance relationship in the model is designed for.
+
+Under the hood, Ouija uses Bayesian non-linear factor analysis with priors on the factor loading matrix to specify gene behaviour. Inference is performed using the [Stan](http://mc-stan.org) probabilistic programming language.
+
+
+## A basic example using synthetic data
+
+Here we can use some synthetic data bundled with the package. This contains a gene expression matrix `synth_gex` comprising 6 genes and 100 cells, along with the true pseudotimes `true_pst`:
+
+```{r load-synth-data}
+library(ouija)
+data(synth_gex, true_pst)
+```
+
+We can quickly plot the gene expression against known pseudotime:
+
+```{r plot-gex, fig.width = 7, fig.height = 3}
+dex <- data.frame(synth_gex, true_pst)
+names(dex) <- c(paste0("gene", seq_len(ncol(synth_gex))), "pseudotime")
+dex_melted <- reshape2::melt(dex, id.vars = "pseudotime", 
+                             variable.name = "gene", 
+                             value.name = "expression")
+ggplot(dex_melted, aes(x = pseudotime, y = expression)) + geom_point() +
+  stat_smooth(color = 'red') + facet_wrap(~ gene, scales = "free_y")
+```
+
+In order to fit the Bayesian non-linear factor analysis model, we simply call `ouija`. The 
+```{r ouija-fit}
+oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1))
+print(oui)
+```
+
+It's good practice to look at the trace and aurocorrelation of the (log)-likelihood to make sure the distribution has (roughly) converged. More advanced diagnostics may be accessed through the `rstan` package applied to `oui$fit`.
+
+```{r plot-diagnostics}
+plot(oui, what = "diagnostic")
+```
+
+We can plot the gene expression against the MAP pseudotime too:
+
+```{r plot-map-pseudotime}
+plot(oui, what = "map")
+```
+
+and heatmaps of gene expression ordered by pseudotime trace:
+
+```{r plot-pseudotime-trace, fig.width = 8}
+plot(oui, what = "trace", nrow = 3)
+```
+
+the MAP pseudotime against the 'true' pseudotime:
+
+```{r plot-map-against-true, fig.width = 4, fig.height = 3}
+tmap <- map_pseudotime(oui)
+ggplot(data.frame(true_pst = true_pst, tmap = tmap)) + 
+  geom_point(aes(x = true_pst, y = tmap)) + 
+  xlab("True pseudotime") + ylab("MAP pseudotime") + 
+  stat_smooth(aes(x = true_pst, y = tmap), method = "lm", colour = "red") +
+  geom_label(x = 0.2, y = 0.8, label = paste("Correlation:", 
+                                             format(round(cor(true_pst, tmap), 2), nsmall = 2)))
+```
+
+
+## An example with real data
+
+
+
+## Advanced tuning of priors
+
+
+## Technical info
+
+```{r sess-info}
+devtools::session_info()
+```

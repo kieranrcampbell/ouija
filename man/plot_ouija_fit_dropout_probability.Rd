@@ -4,10 +4,10 @@
 \alias{plot_ouija_fit_dropout_probability}
 \title{Plot dropout probability}
 \usage{
-plot_ouija_fit_dropout_probability(bm, posterior_samples = 40)
+plot_ouija_fit_dropout_probability(oui, posterior_samples = 40)
 }
 \arguments{
-\item{bm}{An object of class \code{ouija_fit}}
+\item{oui}{An object of class \code{ouija_fit}}
 
 \item{posterior_samples}{Number of posterior samples to add to the plot. If 0, only
 the MAP estimate is plotted.}
