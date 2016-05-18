@@ -4,19 +4,19 @@
 \alias{plot.ouija_fit}
 \title{Plot a \code{ouija_fit}}
 \usage{
-\method{plot}{ouija_fit}(x, what = c("trace", "map", "diagnostic", "dropout"),
-  ...)
+\method{plot}{ouija_fit}(x, what = c("behaviour", "behavior", "diagnostic",
+  "heatmap", "dropout"), ...)
 }
 \arguments{
 \item{x}{An object of class \code{ouija_fit}}
 
 \item{what}{One of
 \itemize{
-\item \code{trace} This produces a heatmap of gene expression as a function of pseudotime
-across different pseudotime samples. Underlying call is to \code{\link{plot_ouija_fit_trace}}.
-\item \code{map} This plots gene expression as a function of the MAP pseudotime with a red
-line denoting a LOESS fit (showing the overall trend). Underlying call is to
-\code{\link{plot_ouija_fit_map}}
+\item \code{heatmap} This produces a heatmap of gene expression as a function of pseudotime
+across different pseudotime samples. Underlying call is to \code{\link{plot_ouija_fit_heatmap}}.
+\item \code{behaviour} This plots gene expression as a function of the MAP pseudotime with a red
+line denoting the mean sigmoid trend. Underlying call is to
+\code{\link{plot_ouija_fit_behaviour}}
 \item \code{diagnostic} This returns trace and autocorrelation plots of the log-posterior
 probability. Underlying call is to \code{\link{plot_ouija_fit_diagnostics}}
 \item \code{dropout} Returns a plot showing the relationship between latent expression
@@ -30,7 +30,16 @@ Underlying call is to \code{\link{plot_ouija_fit_dropout_probability}}
 A \code{ggplot2} plot.
 }
 \description{
-Plot a \code{ouija_fit} object. Returns either a trace fit, MAP fit or MCMC diagnostic fit.
-See the individual function calls (described below) for more details.
+Plot a \code{ouija_fit} object. Returns a plot of either
+\itemize{
+\item{diagnostic} Trace and autocorrelation plots of the log-posterior
+probability. Underlying call is to \code{\link{plot_ouija_fit_diagnostics}}
+\item{behaviour}  Gene expression as a function of the MAP pseudotime with a red
+line denoting the mean sigmoid trend
+\item{heatmap} A heatmap of gene expression as a function of pseudotime
+across different pseudotime samples.
+\item{dropout} The relationship between latent expression
+value and dropout probability. 
+}
 }
 

@@ -41,7 +41,7 @@ plot(oui, what = "diagnostic")
 We can then plot the gene behaviour at the MAP pseudotime estimates:
 
 ```R
-plot(oui, what = "map")
+plot(oui, what = "behaviour")
 ```
 
 <img src="inst/www/map.png" width="600"/>
@@ -51,7 +51,7 @@ An informative way to understand the uncertainty in the ordering is to look at
 the gene expression trace plot:
 
 ```R
-plot(oui, what = "trace")
+plot(oui, what = "heatmap")
 ```
 
 <img src="inst/www/trace.png" width="600"/>

@@ -7,7 +7,7 @@ context("Basic functionality")
 test_that("ouija returns valid object", {
   data(synth_gex)
   
-  oui <- ouija(synth_gex, iter = 100)
+  oui <- ouija(synth_gex, iter = 100, warn_lp = FALSE)
   
   expect_is(oui, "ouija_fit")
   expect_is(oui$fit, "stanfit")

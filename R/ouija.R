@@ -84,7 +84,7 @@ ouija <- function(x,
                t0_means = times, t0_sd = time_sd)
   
   stanfile <- system.file(model_file, package = "ouija")
-  model <- stan_model(stanfile, auto_write = TRUE)
+  model <- stan_model(stanfile)
   
   ## manipulate stan defaults
   stanargs <- list(...)
@@ -183,17 +183,26 @@ print.ouija_fit <- function(x, ...) {
 
 #' Plot a \code{ouija_fit}
 #' 
-#' Plot a \code{ouija_fit} object. Returns either a trace fit, MAP fit or MCMC diagnostic fit.
-#' See the individual function calls (described below) for more details.
+#' Plot a \code{ouija_fit} object. Returns a plot of either
+#' \itemize{
+#' \item{diagnostic} Trace and autocorrelation plots of the log-posterior
+#' probability. Underlying call is to \code{\link{plot_ouija_fit_diagnostics}}
+#' \item{behaviour}  Gene expression as a function of the MAP pseudotime with a red
+#' line denoting the mean sigmoid trend
+#' \item{heatmap} A heatmap of gene expression as a function of pseudotime
+#' across different pseudotime samples.
+#' \item{dropout} The relationship between latent expression
+#' value and dropout probability. 
+#' }
 #' 
 #' @param x An object of class \code{ouija_fit}
 #' @param what One of
 #' \itemize{
-#' \item \code{trace} This produces a heatmap of gene expression as a function of pseudotime
-#' across different pseudotime samples. Underlying call is to \code{\link{plot_ouija_fit_trace}}.
-#' \item \code{map} This plots gene expression as a function of the MAP pseudotime with a red
-#' line denoting a LOESS fit (showing the overall trend). Underlying call is to
-#' \code{\link{plot_ouija_fit_map}}
+#' \item \code{heatmap} This produces a heatmap of gene expression as a function of pseudotime
+#' across different pseudotime samples. Underlying call is to \code{\link{plot_ouija_fit_heatmap}}.
+#' \item \code{behaviour} This plots gene expression as a function of the MAP pseudotime with a red
+#' line denoting the mean sigmoid trend. Underlying call is to
+#' \code{\link{plot_ouija_fit_behaviour}}
 #' \item \code{diagnostic} This returns trace and autocorrelation plots of the log-posterior
 #' probability. Underlying call is to \code{\link{plot_ouija_fit_diagnostics}}
 #' \item \code{dropout} Returns a plot showing the relationship between latent expression
@@ -205,11 +214,13 @@ print.ouija_fit <- function(x, ...) {
 #' @return A \code{ggplot2} plot.
 #' @method plot ouija_fit
 #' @export
-plot.ouija_fit <- function(x, what = c("trace", "map", "diagnostic", "dropout"), ...) {
+plot.ouija_fit <- function(x, what = c("behaviour", "behavior", "diagnostic", 
+                                       "heatmap", "dropout"), ...) {
   what <- match.arg(what)
   plt <- switch(what,
-                trace = plot_ouija_fit_trace(x, ...),
-                map = plot_ouija_fit_map(x, ...),
+                heatmap = plot_ouija_fit_heatmap(x, ...),
+                behaviour = plot_ouija_fit_behaviour(x, ...),
+                behavior = plot_ouija_fit_behaviour(x, ...),
                 diagnostic = plot_ouija_fit_diagnostics(x, ...),
                 dropout = plot_ouija_fit_dropout_probability(x, ...))
   return(plt)
@@ -266,7 +277,7 @@ plot_ouija_fit_diagnostics <- function(oui, arrange = c("vertical", "horizontal"
 #' @export
 #' 
 #' @return A \code{ggplot2} object.
-plot_ouija_fit_trace <- function(oui, samples = 50, genes = seq_len(min(oui$G, 6)),
+plot_ouija_fit_heatmap <- function(oui, samples = 50, genes = seq_len(min(oui$G, 6)),
                                  output = c("grid", "plotlist"), 
                                  show_legend = FALSE, ...) {
   stopifnot(is(oui, "ouija_fit"))
@@ -342,7 +353,7 @@ tsigmoid <- function(mu0, k, t0, t) {
 #' @export
 #' 
 #' @return An object of class \code{ggplot2}
-plot_ouija_fit_map <- function(oui, genes = seq_len(min(oui$G, 6)),
+plot_ouija_fit_behaviour <- function(oui, genes = seq_len(min(oui$G, 6)),
                                expression_units = "log2(TPM+1)") {
   stopifnot(is(oui, "ouija_fit"))
   tmap <- map_pseudotime(oui)
