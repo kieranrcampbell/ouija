@@ -4,7 +4,8 @@
 \alias{plot.ouija_fit}
 \title{Plot a \code{ouija_fit}}
 \usage{
-plot.ouija_fit(x, what = c("trace", "map", "diagnostic", "dropout"), ...)
+\method{plot}{ouija_fit}(x, what = c("trace", "map", "diagnostic", "dropout"),
+  ...)
 }
 \arguments{
 \item{x}{An object of class \code{ouija_fit}}

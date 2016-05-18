@@ -107,7 +107,7 @@ ouija <- function(x,
     siter <- seq_along(lp)
     lplm <- lm(lp ~ siter)
     if(coef(lplm)[2] > lp_gradient_threshold) {
-      warning(paste("Gradient of log-probability against iteration greater than threshold: "), coef(lmlp)[2])
+      warning(paste("Gradient of log-probability against iteration greater than threshold: "), coef(lplm)[2])
       warning("Model may not be converged")
     }
   }
@@ -172,6 +172,8 @@ rexprs.ouija_fit <- function(oui) {
 #' @param x An object of class \code{ouija_fit}.
 #' @param ... Additional arguments.
 #' 
+#' @method print ouija_fit
+#' @export
 #' @return A character string representation of \code{x}
 print.ouija_fit <- function(x, ...) {
   cat(paste("A Bayesian non-linear factor analysis fit with\n"),
@@ -201,7 +203,8 @@ print.ouija_fit <- function(x, ...) {
 #' @param ... Additional arguments passed to the corresponding functions
 #' 
 #' @return A \code{ggplot2} plot.
-#' 
+#' @method plot ouija_fit
+#' @export
 plot.ouija_fit <- function(x, what = c("trace", "map", "diagnostic", "dropout"), ...) {
   what <- match.arg(what)
   plt <- switch(what,
