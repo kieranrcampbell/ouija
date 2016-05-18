@@ -6,11 +6,11 @@ Authors@R: person("Kieran", "Campbell", email = "kieranc@well.ox.ac.uk", role = 
 Description: Ouija learns trajectories or 'pseudotimes' from single-cell RNA-seq data. Using Bayesian 
   nonlinear factor analysis biological knowledge of gene expression across pseudotime can be
   encoded as informative priors in the model.
-Depends: 
+Depends:
     R (>= 3.2.0)
 License: MIT
 LazyData: true
-Imports: 
+Imports:
     ggplot2,
     rstan,
     MCMCglmm,
@@ -19,8 +19,10 @@ Imports:
     reshape2,
     viridis,
     dplyr,
-    matrixStats
+    matrixStats,
+    magrittr
 RoxygenNote: 5.0.1
 Suggests: knitr,
-    rmarkdown
+    rmarkdown,
+    testthat
 VignetteBuilder: knitr

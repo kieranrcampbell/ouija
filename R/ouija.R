@@ -84,7 +84,7 @@ ouija <- function(x,
                t0_means = times, t0_sd = time_sd)
   
   stanfile <- system.file(model_file, package = "ouija")
-  model <- stan_model(stanfile)
+  model <- stan_model(stanfile, auto_write = TRUE)
   
   ## manipulate stan defaults
   stanargs <- list(...)
@@ -391,7 +391,7 @@ plot_ouija_fit_map <- function(oui, genes = seq_len(min(oui$G, 6)),
 #' 
 #' @export
 #' @import ggplot2
-#' @import magrittr
+#' @importFrom magrittr "%>%"
 #' 
 #' @return Either a list of plots of class \code{ggplot} or a single 
 #' \code{ggplot} showing them
