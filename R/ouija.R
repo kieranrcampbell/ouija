@@ -178,7 +178,7 @@ rexprs.ouija_fit <- function(oui) {
 print.ouija_fit <- function(x, ...) {
   cat(paste("A Bayesian non-linear factor analysis fit with\n"),
           paste(x$N, "cells and", x$G, "marker genes\n"),
-          paste("MCMC info:", x$iter, "iterations on", x$chains, "chains"))
+          paste("MCMC info:", x$iter, "iterations on", x$chains, "chains\n"))
 }
 
 #' Plot a \code{ouija_fit}
