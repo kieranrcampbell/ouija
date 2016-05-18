@@ -6,6 +6,20 @@
 \usage{
 tsigmoid(mu0, k, t0, t)
 }
+\arguments{
+\item{mu0}{The 'average' expression parameter}
+
+\item{k}{The 'activation strength' parameter}
+
+\item{t0}{The 'activation time' parameter}
+
+\item{t}{The latent pseudotimes}
+}
+\value{
+A numeric vector of length \code{length(t)} that
+is the sigmoid function applied to \code{t} using the parameters
+\code{mu0}, \code{k} and \code{t0}.
+}
 \description{
 Generic function to return sigmoid whenever needed
 }

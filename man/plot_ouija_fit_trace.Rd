@@ -23,8 +23,6 @@ for the user to customise further}
 displayed for each heatmap.}
 
 \item{...}{Additional arguments passed to \code{cowplot::plot_grid}}
-
-\item{samples}{Number of posterior pseudotime samples to use}
 }
 \value{
 A \code{ggplot2} object.

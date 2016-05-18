@@ -9,7 +9,9 @@ plot_ouija_fit_diagnostics(oui, arrange = c("vertical", "horizontal"))
 \arguments{
 \item{oui}{A \code{ouija_fit} object}
 
-\item{nrow}{Number of rows. If 1, plots are side-by-side; if 2, plots are vertically aligned.}
+\item{arrange}{How to arrange the plots. If "vertical", traceplot and autocorrelation are 
+arranged in one column, while if "horizontal" traceplot and autocorrelation are arranged
+in one row.}
 }
 \value{
 A \code{ggplot2} object

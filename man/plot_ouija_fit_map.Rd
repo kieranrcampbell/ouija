@@ -12,6 +12,9 @@ plot_ouija_fit_map(oui, genes = seq_len(min(oui$G, 6)),
 
 \item{genes}{A vector that subsets the gene expression matrix. Defaults to the first \code{g}
 genes, where \code{g} is either 4 or the number of genes in the model if less than 4.}
+
+\item{expression_units}{The label for the y-axis of the plot. Defaults to
+"log2(TPM + 1)".}
 }
 \value{
 An object of class \code{ggplot2}

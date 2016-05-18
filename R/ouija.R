@@ -53,7 +53,7 @@ ouija <- function(x,
   Y <- NULL
   if(is(x, "SCESet")) {
     ## convert to expression matrix Y  
-    Y <- t(exprs(x))
+    Y <- t(scater::exprs(x))
   } else {
     Y <- x
   }
@@ -119,17 +119,7 @@ ouija <- function(x,
   return(oui)
 }
 
-#' Extract the MAP pseudotime estimates from a \code{ouija_fit}
-#' 
-#' @param oui An object of class \code{ouija_fit}.
-#' 
-#' @importFrom MCMCglmm posterior.mode
-#' @importFrom rstan extract
-#' @importFrom coda mcmc
-#' 
-#' @export
-#' 
-#' @return MAP pseudotime vector of length N
+#' @name map_pseudotime
 map_pseudotime <- function(oui) UseMethod("map_pseudotime")
 
 #' Extract the MAP pseudotime estimates from a \code{ouija_fit}
@@ -141,6 +131,7 @@ map_pseudotime <- function(oui) UseMethod("map_pseudotime")
 #' @importFrom coda mcmc
 #' 
 #' @export
+#' @name map_pseudotime
 #' 
 #' @return MAP pseudotime vector of length N
 map_pseudotime.ouija_fit <- function(oui) {
@@ -148,14 +139,25 @@ map_pseudotime.ouija_fit <- function(oui) {
   posterior.mode(mcmc(extract(oui$fit, "t")$t))
 }
 
-#' Reconstructed pseudotimes
-#' @export
+#' Reconstructed expression
+#' @name rexprs
 rexprs <- function(oui) UseMethod("rexprs")
 
+#' Reconstructed expression
+#' 
+#' The reconstructed (ie predicted) expression from the fit.
+#' 
+#' @param oui An object of class \code{ouija_fit}.
+#' 
 #' @importFrom MCMCglmm posterior.mode
 #' @importFrom rstan extract
 #' @importFrom coda mcmc
+#' 
+#' @return A matrix of the same dimension as \code{oui$Y} containing 
+#' the predicted expression.
+#' 
 #' @export
+#' @name rexprs
 rexprs.ouija_fit <- function(oui) {
   stopifnot(is(oui, "ouija_fit"))
   Z <- apply(extract(oui$fit, "mu")$mu, 3, function(x) posterior.mode(mcmc(x)))
@@ -168,9 +170,10 @@ rexprs.ouija_fit <- function(oui) {
 #' Print a \code{ouija_fit}
 #' 
 #' @param x An object of class \code{ouija_fit}.
+#' @param ... Additional arguments.
 #' 
-#' @export
-print.ouija_fit <- function(x) {
+#' @return A character string representation of \code{x}
+print.ouija_fit <- function(x, ...) {
   cat(paste("A Bayesian non-linear factor analysis fit with\n"),
           paste(x$N, "cells and", x$G, "marker genes\n"),
           paste("MCMC info:", x$iter, "iterations on", x$chains, "chains"))
@@ -199,7 +202,6 @@ print.ouija_fit <- function(x) {
 #' 
 #' @return A \code{ggplot2} plot.
 #' 
-#' @export
 plot.ouija_fit <- function(x, what = c("trace", "map", "diagnostic", "dropout"), ...) {
   what <- match.arg(what)
   plt <- switch(what,
@@ -219,7 +221,9 @@ plot.ouija_fit <- function(x, what = c("trace", "map", "diagnostic", "dropout"),
 #' underlying STAN object (accessed through \code{oui$fit}).
 #' 
 #' @param oui A \code{ouija_fit} object
-#' @param nrow Number of rows. If 1, plots are side-by-side; if 2, plots are vertically aligned.
+#' @param arrange How to arrange the plots. If "vertical", traceplot and autocorrelation are 
+#' arranged in one column, while if "horizontal" traceplot and autocorrelation are arranged
+#' in one row.
 #' @export
 #' @importFrom cowplot plot_grid
 #' 
@@ -256,8 +260,6 @@ plot_ouija_fit_diagnostics <- function(oui, arrange = c("vertical", "horizontal"
 #' @importFrom viridis scale_fill_viridis
 #' @importFrom reshape2 melt
 #' 
-#' 
-#' @param samples Number of posterior pseudotime samples to use
 #' @export
 #' 
 #' @return A \code{ggplot2} object.
@@ -301,6 +303,16 @@ plot_ouija_fit_trace <- function(oui, samples = 50, genes = seq_len(min(oui$G, 6
 }
 
 #' Generic function to return sigmoid whenever needed
+#' 
+#' @param mu0 The 'average' expression parameter
+#' @param k The 'activation strength' parameter
+#' @param t0 The 'activation time' parameter
+#' @param t The latent pseudotimes
+#' 
+#' @return A numeric vector of length \code{length(t)} that
+#' is the sigmoid function applied to \code{t} using the parameters
+#' \code{mu0}, \code{k} and \code{t0}.
+#'
 tsigmoid <- function(mu0, k, t0, t) {
   return( 2 * mu0 / (1 + exp(-k*(t - t0))))
 }
@@ -314,6 +326,8 @@ tsigmoid <- function(mu0, k, t0, t) {
 #' @param oui An object of class \code{ouija_fit}
 #' @param genes A vector that subsets the gene expression matrix. Defaults to the first \code{g}
 #' genes, where \code{g} is either 4 or the number of genes in the model if less than 4.
+#' @param expression_units The label for the y-axis of the plot. Defaults to
+#' "log2(TPM + 1)".
 #' 
 #' @importFrom reshape2 melt
 #' @importFrom rstan extract
@@ -377,6 +391,7 @@ plot_ouija_fit_map <- function(oui, genes = seq_len(min(oui$G, 6)),
 #' 
 #' @export
 #' @import ggplot2
+#' @import magrittr
 #' 
 #' @return Either a list of plots of class \code{ggplot} or a single 
 #' \code{ggplot} showing them
