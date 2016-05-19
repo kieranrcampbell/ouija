@@ -5,7 +5,7 @@
 \title{Plot a \code{ouija_fit}}
 \usage{
 \method{plot}{ouija_fit}(x, what = c("behaviour", "behavior", "diagnostic",
-  "heatmap", "dropout"), ...)
+  "heatmap", "pp", "dropout"), ...)
 }
 \arguments{
 \item{x}{An object of class \code{ouija_fit}}
@@ -19,6 +19,8 @@ line denoting the mean sigmoid trend. Underlying call is to
 \code{\link{plot_ouija_fit_behaviour}}
 \item \code{diagnostic} This returns trace and autocorrelation plots of the log-posterior
 probability. Underlying call is to \code{\link{plot_ouija_fit_diagnostics}}
+\item \code{pp} This returns density plots of posterior distributions for either activation
+strength parameters \code{k} or activation time parameters \code{t0}.
 \item \code{dropout} Returns a plot showing the relationship between latent expression
 value and dropout probability. 
 Underlying call is to \code{\link{plot_ouija_fit_dropout_probability}}
@@ -38,6 +40,8 @@ probability. Underlying call is to \code{\link{plot_ouija_fit_diagnostics}}
 line denoting the mean sigmoid trend
 \item{heatmap} A heatmap of gene expression as a function of pseudotime
 across different pseudotime samples.
+\item{pp} Density plots comparing prior to posterior distributions for the
+activation parameters.
 \item{dropout} The relationship between latent expression
 value and dropout probability. 
 }

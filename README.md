@@ -56,6 +56,14 @@ plot(oui, what = "heatmap")
 
 <img src="inst/www/trace.png" width="600"/>
 
+We can also plot how the prior compares to the posterior over the activation parameters, such as strength or time:
+
+```R
+plot(oui, what = "pp")
+```
+
+<img src="inst/www/pp.png" width="600" />
+
 ### Extracting the pseudotimes
 
 #### Point estimates

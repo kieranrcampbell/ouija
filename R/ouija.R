@@ -114,7 +114,9 @@ ouija <- function(x,
     
   oui <- structure(list(fit = fit, G = G, N = N, Y = Y,
                        iter = stanargs$iter, chains = stanargs$chains,
-                       thin = stanargs$thin), 
+                       thin = stanargs$thin,
+                       strengths = strengths, strength_sd = strength_sd,
+                       times = times, time_sd = time_sd), 
                   class = "ouija_fit")
   return(oui)
 }
@@ -205,6 +207,8 @@ print.ouija_fit <- function(x, ...) {
           paste("MCMC info:", x$iter, "iterations on", x$chains, "chains\n"))
 }
 
+
+
 #' Plot a \code{ouija_fit}
 #' 
 #' Plot a \code{ouija_fit} object. Returns a plot of either
@@ -215,6 +219,8 @@ print.ouija_fit <- function(x, ...) {
 #' line denoting the mean sigmoid trend
 #' \item{heatmap} A heatmap of gene expression as a function of pseudotime
 #' across different pseudotime samples.
+#' \item{pp} Density plots comparing prior to posterior distributions for the
+#' activation parameters.
 #' \item{dropout} The relationship between latent expression
 #' value and dropout probability. 
 #' }
@@ -229,6 +235,8 @@ print.ouija_fit <- function(x, ...) {
 #' \code{\link{plot_ouija_fit_behaviour}}
 #' \item \code{diagnostic} This returns trace and autocorrelation plots of the log-posterior
 #' probability. Underlying call is to \code{\link{plot_ouija_fit_diagnostics}}
+#' \item \code{pp} This returns density plots of posterior distributions for either activation
+#' strength parameters \code{k} or activation time parameters \code{t0}.
 #' \item \code{dropout} Returns a plot showing the relationship between latent expression
 #' value and dropout probability. 
 #' Underlying call is to \code{\link{plot_ouija_fit_dropout_probability}}
@@ -239,13 +247,14 @@ print.ouija_fit <- function(x, ...) {
 #' @method plot ouija_fit
 #' @export
 plot.ouija_fit <- function(x, what = c("behaviour", "behavior", "diagnostic", 
-                                       "heatmap", "dropout"), ...) {
+                                       "heatmap", "pp", "dropout"), ...) {
   what <- match.arg(what)
   plt <- switch(what,
                 heatmap = plot_ouija_fit_heatmap(x, ...),
                 behaviour = plot_ouija_fit_behaviour(x, ...),
                 behavior = plot_ouija_fit_behaviour(x, ...),
                 diagnostic = plot_ouija_fit_diagnostics(x, ...),
+                pp = plot_ouija_fit_pp(x, ...),
                 dropout = plot_ouija_fit_dropout_probability(x, ...))
   return(plt)
 }
@@ -504,6 +513,57 @@ plot_ouija_fit_dropout_probability <- function(oui, posterior_samples = 40) {
                 colour = "red") +
     ylab("Dropout probability") + xlab("Latent expression")
   return( plt )
+}
+
+#' Prior-posterior density plots for activation parameters
+#' 
+#' @param oui An object of class \code{ouija_fit}
+#' @param genes A numeric vector indicating indices of genes to plot
+#' @param param Either plot the activation strength \code{k} parameter or
+#' activation time \code{t0} parameter
+#' 
+#' @return An object of class \code{ggplot2}
+#' @export
+#' @import ggplot2
+#' @importFrom reshape2 melt
+#' @importFrom magrittr "%>%"
+plot_ouija_fit_pp <- function(oui, genes = seq_len(ncol(oui$Y)), param = c("k", "t0")) {
+  stopifnot(is(oui, "ouija_fit"))
+  ngenes <- ncol(oui$Y)
+  if(any(genes > ngenes)) stop("Genes outside possible range")
+  
+  param <- match.arg(param)
+  
+  label <- switch(param,
+                  k = "activation strength",
+                  t0 = "activation time")
+  label <- paste("Prior-posterior for", label)
+  
+  mu <- sd <- NULL
+  if(param == "k") {
+    mu <- oui$strengths[genes]
+    sd <- oui$strength_sd[genes]
+  } else {
+    mu <- oui$times[genes]
+    sd <- oui$time_sd[genes]
+  }
+  dfs <- lapply(genes, function(g) {
+    posterior <- rstan::extract(oui$fit, param)[[param]][,g]
+    prior <- rnorm(length(posterior), mu[g], sd[g])
+    
+    dm <- data.frame(prior = prior, posterior = posterior) %>%
+      melt(variable.name = "Prob", value.name = "Sample") %>%
+      dplyr::mutate(Gene = colnames(oui$Y)[g])
+    return(dm)
+  })
+  dfs <- do.call(rbind, dfs)
+  
+  ggplot(dfs, aes(x = Sample, fill = Prob)) + geom_density(colour = "Black", alpha = 0.8) +
+    cowplot::theme_cowplot() +
+    ylab("Density") + xlab("Parameter value") +
+    scale_fill_brewer(palette = "Set1") +
+    facet_wrap(~ Gene, scales = "free") +
+    ggtitle(label)
 }
 
 #' Synthetic gene expression matrix
