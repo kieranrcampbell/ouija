@@ -139,6 +139,30 @@ map_pseudotime.ouija_fit <- function(oui) {
   posterior.mode(mcmc(extract(oui$fit, "t")$t))
 }
 
+#' @name pseudotime_error
+pseudotime_error <- function(oui) UseMethod("pseudotime_error")
+
+#' Pseudotime errors
+#' 
+#' Returns the highest probability credible intervals for each cell.
+#' @param oui An object of class \code{ouija_fit}
+#' @param prob The probability for the credible interval. Default is 0.95.
+#' 
+#' @name pseudotime_error
+#' 
+#' @importFrom rstan extract
+#' @importFrom coda mcmc, HPDinterval
+#' @export
+#' 
+#' @return A matrix with two columns, where the first column gives the lower
+#' interval and the second gives the upper interval for the pseudotimes of
+#' each cell.
+pseudotime_error.ouija_fit <- function(oui, prob = 0.95) {
+  t_trace <- extract(oui$fit, "t")$t
+  hpd <- HPDinterval(mcmc(t_trace), prob = prob)
+  return( hpd )
+}
+
 #' Reconstructed expression
 #' @name rexprs
 rexprs <- function(oui) UseMethod("rexprs")

@@ -20,7 +20,8 @@ Imports:
     viridis,
     dplyr,
     matrixStats,
-    magrittr
+    magrittr,
+    coda
 RoxygenNote: 5.0.1
 Suggests: knitr,
     rmarkdown,

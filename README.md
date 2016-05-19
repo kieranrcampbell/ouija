@@ -58,6 +58,8 @@ plot(oui, what = "heatmap")
 
 ### Extracting the pseudotimes
 
+#### Point estimates
+
 [MAP](https://en.wikipedia.org/wiki/Maximum_a_posteriori_estimation) estimates (ie point estimates) may be extracted using the `map_pseudotime` function for further downstream analysis:
 
 ```R
@@ -76,7 +78,16 @@ If you wish to take a more Bayesian approach, the full set of pseudotime samples
 posterior_pseudotime_traces <- rstan::extract(oui$fit, "t")$t
 ```
 
-Then, any further analyses (such as posterior uncertainty calculations) may be performed on the `posterior_pseudotime_traces` matrix.
+#### Posterior errors
+
+One of the advantages in performing a Bayesian pseudotime analysis is that we can quantify the posterior uncertainty in the pseudotimes of each cell. To do this we can find the highest probability density (HPD) [credible interval](https://en.wikipedia.org/wiki/Credible_interval), which can be thought of as the Bayesian equivalent of a confidence interval. However, unlike a confidence interval, it *does* have the interpretation that there's a 95% chance the parameter (here the pseudotimes) will fall within the interval. To find the credible interval call
+
+```R
+cred_int <- pseudotime_error(oui)
+```
+
+which returns a matrix with two columns, with the first column corresponding to the lower interval and the second corresponding to the upper interval. By default the interval probability is 95%, but this can be adjusted using the `prob` parameter.
+
 
 ## Incorporating prior information
 
