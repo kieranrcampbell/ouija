@@ -56,6 +56,27 @@ plot(oui, what = "heatmap")
 
 <img src="inst/www/trace.png" width="600"/>
 
+### Extracting the pseudotimes
+
+[MAP](https://en.wikipedia.org/wiki/Maximum_a_posteriori_estimation) estimates (ie point estimates) may be extracted using the `map_pseudotime` function for further downstream analysis:
+
+```R
+t_map_estimate <- map_pseudotime(oui)
+```
+
+For example, if you're working with an `SCESet` object from the [scater](http://github.com/davismcc/scater) package, you could add this as a new variable in the phenotype data slot:
+
+```R
+pData(sce)$Pseudotime <- map_pseudotime(oui)
+```
+
+If you wish to take a more Bayesian approach, the full set of pseudotime samples can be extracted from the underlying `stanfit` object, which is held in the `$fit` position of any `ouija_fit` object. The pseudotimes are encoded in the parameter `t`. To get the sample-by-cell matrix:
+
+```R
+posterior_pseudotime_traces <- rstan::extract(oui$fit, "t")$t
+```
+
+Then, any further analyses (such as posterior uncertainty calculations) may be performed on the `posterior_pseudotime_traces` matrix.
 
 ## Incorporating prior information
 
