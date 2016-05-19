@@ -1,6 +1,6 @@
 # Ouija
 
-R package for Bayesian non-linear factor analysis for incorporating prior knowledge in single-cell trajectory learning.
+Ouija is a statistical framework for learning pseudotimes from single-cell RNA-seq data using only small panels of marker genes and prior knowledge of gene behaviour. The user can place priors on whether a given gene is up or down regulated along a trajectory, as well as where in the trajectory the regulation happens. Under-the-hood Ouija uses Bayesian hierarchical nonlinear factor analysis as implemented in the probabilistic programming language [Stan](http://mc-stan.org).
 
 ## Getting started
 
@@ -63,29 +63,29 @@ Ouija assumes gene expression across pseudotime will follow a particular pattern
 
 ### Activation strength
 
-The activation strength parameter (known in the statistical model as $k$) dictates how quickly a gene turns on or off. A large magnitude means the gene turns on/off quickly, while a small magnitude means the gene turns on/off slowly (and in some cases, approximately linearly). The sign of the strength parameter dictates whether the gene turns on (positive) or off (negative) along the trajectory. Examples for various $k$ are in the gif below.
+The activation strength parameter (known in the statistical model as *k*) dictates how quickly a gene turns on or off. A large magnitude means the gene turns on/off quickly, while a small magnitude means the gene turns on/off slowly (and in some cases, approximately linearly). The sign of the strength parameter dictates whether the gene turns on (positive) or off (negative) along the trajectory. Examples for various *k* are in the gif below.
 
 <img src="inst/www/k.gif" width="300"/>
 
-To incorporate prior information about the activation strength we place a $N(\mu_k, \sigma_k)$ prior on $k$ _for each gene_. The mean parameter $\mu_k$ describes the expected behaviour as above, while the standard deviation parameter $\sigma_k$ controls how sure we are of this behaviour.
+To incorporate prior information about the activation strength we place a *N(μ<sub>k</sub>, σ<sub>k</sub>)* prior on *k* for each gene. The mean parameter *μ*<sub>k</sub> describes the expected behaviour as above, while the standard deviation parameter *σ<sub>k</sub>* controls how sure we are of this behaviour.
 
-For example, if we expect a gene to turn on quickly, we may impose $\mu_k = 20$. If we are sure of this we would then place a small standard deviation on this, e.g. $\sigma_k = 1$, while if we are not sure we may place a more diffuse standard deviation, e.g. $\sigma_k = 5$. These two examples are shown below in plots *A* and *B* respectively.
+For example, if we expect a gene to turn on quickly, we may impose *μ<sub>k</sub> = 20*. If we are sure of this we would then place a small standard deviation on this, e.g. *σ<sub>k</sub> = 1*, while if we are not sure we may place a more diffuse standard deviation, e.g. *σ<sub>k</sub> = 5*. These two examples are shown below in plots *A* and *B* respectively.
 
 <img src="inst/www/k_certainty.png" width="500"/>
 
-The parameters are encoded in the `ouija` function via the parameters `strengths` and `strength_sd` for $\mu_k$ and $\sigma_k$ respectively.
+The parameters are encoded in the `ouija` function via the parameters `strengths` and `strength_sd` for *μ<sub>k</sub>* and *σ<sub>k</sub>* respectively.
 
 ### Activation time
 
-The activation time (known in the statistical model as $t_0$) tells us where in the trajectory a gene turns on or off. The pseudotimes are defined between 0 and 1, so if $t_0 = 0$ then we expect the behaviour to occur at the start of the trajectory, $t_0 = 0.5$ it would occur in the middle and $t_0 = 1$ it would occur towards the end. Examples for various $t_0$ are shown in the gif below.
+The activation time (known in the statistical model as *t<sub>0</sub>*) tells us where in the trajectory a gene turns on or off. The pseudotimes are defined between 0 and 1, so if *t<sub>0</sub> = 0* then we expect the behaviour to occur at the start of the trajectory, *t<sub>0</sub> = 0.5* it would occur in the middle and *t<sub>0</sub> = 1* it would occur towards the end. Examples for various *t<sub>0</sub>* are shown in the gif below.
 
 <img src="inst/www/t0.gif" width="300"/>
 
-To incorporate prior knowledge of $t_0$ we place a $N(\mu_t, \sigma_t)$ prior on it. As before, $\mu_t$ gives is the expected position in the trajectory, while $\sigma_t$ tells us how sure of this we are. Examples are shown below for a gene we expect to turn on in the middle of the trajectory ($\mu_t = 0.5$), and two situations where we are very sure of this $\sigma_t = 0.1$ and not so sure $\sigma_t = 1$ in *A* and *B* respectively.
+To incorporate prior knowledge of *t<sub>0</sub>* we place a *N(μ<sub>t</sub>, σ<sub>t</sub>)* prior on it. As before, *μ<sub>t</sub>* gives is the expected position in the trajectory, while *σ<sub>t</sub>* tells us how sure of this we are. Examples are shown below for a gene we expect to turn on in the middle of the trajectory (*μ<sub>t</sub> = 0.5*), and two situations where we are very sure of this *σ<sub>t</sub> = 0.1* and not so sure *σ<sub>t</sub> = 1* in *A* and *B* respectively.
 
 <img src="inst/www/t0_certainty.png" width="500"/>
 
-The parameters are encoded in the `ouija` function via the parameters `times` and `time_sd` for $\mu_t$ and $\sigma_t$ respectively.
+The parameters are encoded in the `ouija` function via the parameters `times` and `time_sd` for *μ<sub>t</sub>* and *σ<sub>t</sub>* respectively.
 
 ## Authors
 
