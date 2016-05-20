@@ -153,7 +153,8 @@ pseudotime_error <- function(oui) UseMethod("pseudotime_error")
 #' @name pseudotime_error
 #' 
 #' @importFrom rstan extract
-#' @importFrom coda mcmc, HPDinterval
+#' @importFrom coda HPDinterval
+#' @importFrom coda mcmc
 #' @export
 #' 
 #' @return A matrix with two columns, where the first column gives the lower
