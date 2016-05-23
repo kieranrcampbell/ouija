@@ -65,6 +65,10 @@ ouija <- function(x,
   G <- ncol(Y) # number of genes
   N <- nrow(Y) # number of cells
   
+  if(any(Y < 0)) {
+    stop("Negative entries found in Y - Ouija supports non-negative expression")
+  }
+  
   # we can fill in some values if they're null
   if(is.null(strengths)) strengths = rep(0, G)
   if(is.null(strength_sd)) strength_sd <- rep(1, G)
@@ -122,6 +126,7 @@ ouija <- function(x,
 }
 
 #' @name map_pseudotime
+#' @export
 map_pseudotime <- function(oui) UseMethod("map_pseudotime")
 
 #' Extract the MAP pseudotime estimates from a \code{ouija_fit}
@@ -361,6 +366,7 @@ plot_ouija_fit_heatmap <- function(oui, samples = 50, genes = seq_len(min(oui$G,
 #' is the sigmoid function applied to \code{t} using the parameters
 #' \code{mu0}, \code{k} and \code{t0}.
 #'
+#' @export
 tsigmoid <- function(mu0, k, t0, t) {
   return( 2 * mu0 / (1 + exp(-k*(t - t0))))
 }
@@ -421,12 +427,14 @@ plot_ouija_fit_behaviour <- function(oui, genes = seq_len(min(oui$G, 6)),
   plt <- ggplot(dm_joined, aes(x = pseudotime, y = expression, colour = "Measured")) + 
     geom_point() +
     facet_wrap(~ gene, scales = "free_y") +
-    xlab("MAP pseudotime") + ylab(paste("Expression", expression_units)) + theme_bw()
+    xlab("MAP pseudotime") + ylab(paste("Expression", expression_units)) + 
+    cowplot::theme_cowplot() +
+    scale_x_continuous(breaks = c(0, 0.5, 1))
   plt <- plt + 
     geom_line(aes(x = pseudotime, y = predicted_expression, color = 'Predicted'), 
               size = 2, alpha = 0.7) +
     scale_colour_manual(values = c("Predicted" = "red", "Measured" = "black"), name = element_blank()) +
-    theme(legend.position = "bottom")
+    theme(legend.position = "bottom") 
   return( plt )
 }
 
