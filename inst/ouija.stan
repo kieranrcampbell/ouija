@@ -10,6 +10,8 @@ data {
   
   real t0_means[G]; // mean parameters for t0 provided by user
   real t0_sd[G]; // standard deviation parameters for t0 provided by user
+  
+  real student_df;
 }
 
 parameters {
@@ -64,10 +66,10 @@ model {
         increment_log_prob(log_sum_exp(bernoulli_logit_log(1, 
         beta[1] + beta[2] * mu[g][i]),
         bernoulli_logit_log(0, beta[1] + beta[2] * mu[g][i]) + 
-        student_t_log(Y[g][i], 2, mu[g][i], ysd[g][i])));
+        student_t_log(Y[g][i], student_df, mu[g][i], ysd[g][i])));
       } else {
         increment_log_prob(bernoulli_logit_log(0, beta[1] + beta[2] * mu[g][i]) + 
-        student_t_log(Y[g][i], 2, mu[g][i], ysd[g][i]));
+        student_t_log(Y[g][i], student_df, mu[g][i], ysd[g][i]));
       }
     }
   }

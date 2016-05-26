@@ -29,6 +29,7 @@
 #' the log-probability of the model against the iteration number falls above this value then
 #' the user is warned.
 #' @param ... Additional arguments to \code{rstan::sampling}
+#' @param student_df Degrees of freedom for the student's t likelihood
 #' 
 #' @import rstan
 #' 
@@ -41,6 +42,7 @@ ouija <- function(x,
                   response = c("nonlinear", "linear"),
                   warn_lp = TRUE,
                   lp_gradient_threshold = 1e-2,
+                  student_df = 2,
                   ...) {
   library(rstan) # for some reason this is required despite the @import rstan
   
@@ -69,6 +71,10 @@ ouija <- function(x,
     stop("Negative entries found in Y - Ouija supports non-negative expression")
   }
   
+  if(student_df <= 0) {
+    stop("Degrees of freedom of student distribution must be positive")
+  }
+  
   # we can fill in some values if they're null
   if(is.null(strengths)) strengths = rep(0, G)
   if(is.null(strength_sd)) strength_sd <- rep(1, G)
@@ -85,7 +91,8 @@ ouija <- function(x,
   ## stan setup
   data <- list(Y = t(Y), G = G, N = N,
                k_means = strengths, k_sd = strength_sd,
-               t0_means = times, t0_sd = time_sd)
+               t0_means = times, t0_sd = time_sd,
+               student_df = student_df)
   
   stanfile <- system.file(model_file, package = "ouija")
   model <- stan_model(stanfile)
