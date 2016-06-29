@@ -30,6 +30,9 @@
 #' the user is warned.
 #' @param ... Additional arguments to \code{rstan::sampling}
 #' @param student_df Degrees of freedom for the student's t likelihood
+#' @param inference_type The type of inference to be performed, either \code{hmc} for Hamiltonian
+#' Monte Carlo or \code{vb} for ADVI (Variational Bayes). Note that HMC is typically more accurate
+#' but VB will be orders of magnitude faster.
 #' 
 #' @import rstan
 #' 
@@ -43,8 +46,11 @@ ouija <- function(x,
                   warn_lp = TRUE,
                   lp_gradient_threshold = 1e-2,
                   student_df = 2,
+                  inference_type = c("hmc", "vb"),
                   ...) {
   library(rstan) # for some reason this is required despite the @import rstan
+  
+  inference_type <- match.arg(inference_type)
   
   ## Find out what sort of model we're trying to fit
   response <- match.arg(response)
@@ -99,21 +105,29 @@ ouija <- function(x,
   
   ## manipulate stan defaults
   stanargs <- list(...)
-  if(!('iter' %in% names(stanargs))) stanargs$iter <- 1e4
-  if(!('warmup' %in% names(stanargs))) stanargs$warmup <- stanargs$iter / 2
-  if(!('chains' %in% names(stanargs))) stanargs$chains <- 1
-  if(!('thin' %in% names(stanargs))) {
-    # always specify thin so that approximately 1000 samples are returned
-    stanargs$thin <- ceiling((stanargs$iter - stanargs$warmup) / 1000)
+  if(inference_type == "hmc") { # These are all MCMC parameters
+    if(!('iter' %in% names(stanargs))) stanargs$iter <- 1e4
+    if(!('warmup' %in% names(stanargs))) stanargs$warmup <- stanargs$iter / 2
+    if(!('chains' %in% names(stanargs))) stanargs$chains <- 1
+    if(!('thin' %in% names(stanargs))) {
+      # always specify thin so that approximately 1000 samples are returned
+      stanargs$thin <- ceiling((stanargs$iter - stanargs$warmup) / 1000)
+    }
   }
   stanargs$object <- model
   stanargs$data <- data
   
-  ## call sampling
-  fit <- do.call(sampling, stanargs)
+  ## call inference
+  fit <- NULL
+  if(inference_type == "hmc") {
+    fit <- do.call(sampling, stanargs)
+  } else {
+    fit <- do.call(vb, stanargs)
+  }
+  
   
   ## Do a really dumb automated check of convergence:
-  if(warn_lp) {
+  if(warn_lp && inference_type == "hmc") {
     lp <- extract(fit, pars = "lp__")$lp__
     siter <- seq_along(lp)
     lplm <- lm(lp ~ siter)
@@ -124,10 +138,11 @@ ouija <- function(x,
   }
     
   oui <- structure(list(fit = fit, G = G, N = N, Y = Y,
-                       iter = stanargs$iter, chains = stanargs$chains,
-                       thin = stanargs$thin,
-                       strengths = strengths, strength_sd = strength_sd,
-                       times = times, time_sd = time_sd), 
+                        inference_type = inference_type,
+                        iter = stanargs$iter, chains = stanargs$chains,
+                        thin = stanargs$thin,
+                        strengths = strengths, strength_sd = strength_sd,
+                        times = times, time_sd = time_sd), 
                   class = "ouija_fit")
   return(oui)
 }
@@ -215,9 +230,16 @@ rexprs.ouija_fit <- function(oui) {
 #' @export
 #' @return A character string representation of \code{x}
 print.ouija_fit <- function(x, ...) {
-  cat(paste("A Bayesian non-linear factor analysis fit with\n"),
-          paste(x$N, "cells and", x$G, "marker genes\n"),
-          paste("MCMC info:", x$iter, "iterations on", x$chains, "chains\n"))
+  itype <- switch(x$inference_type,
+                  hmc = "Hamiltonian Monte Carlo",
+                  vb = "Variational Bayes")
+  msg <- paste("A Bayesian non-linear factor analysis fit with\n",
+               x$N, "cells and", x$G, "marker genes\n",
+               "Inference type: ", itype)
+  if(x$inference_type == "hmc") {
+    msg <- paste(msg, "\nMCMC info:", x$iter, "iterations on", x$chains, "chains\n")
+  }
+  cat(msg)
 }
 
 
@@ -291,6 +313,11 @@ plot.ouija_fit <- function(x, what = c("behaviour", "behavior", "diagnostic",
 #' 
 plot_ouija_fit_diagnostics <- function(oui, arrange = c("vertical", "horizontal")) {
   stopifnot(is(oui, "ouija_fit"))
+  
+  if(oui$inference_type == "vb") {
+    warning("Diagnostic plots only make sense for HMC inference")
+  }
+  
   arrange <- match.arg(arrange)
   nrow <- switch(arrange,
                  vertical = 2,

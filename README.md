@@ -11,6 +11,12 @@ Ouija is a statistical framework for learning pseudotimes from single-cell RNA-s
 devtools::install_github("kieranrcampbell/ouija")
 ```
 
+To build the Ouija vignette install using
+
+```R
+devtools::install_github("kieranrcampbell/ouija", build_vignettes = TRUE)
+```
+
 ### Model fitting
 
 Input is a cell-by-gene expression matrices that is non-negative and represents logged gene expression values. We recommend using `log2(TPM + 1)`.
@@ -28,6 +34,8 @@ This is discussed further below.
 strengths <- 5 * c(1, -1, 1, -1, -1, -1)
 oui <- ouija(synth_gex, strengths)
 ```
+
+Ouija also supports Variational Bayes using the `inference_type = "vb"` argument in `ouija`. For more details see the vignette.
 
 ### Plotting
 

@@ -67,13 +67,13 @@ plot(oui, what = "diagnostic")
 We can plot the gene expression against the MAP pseudotime too:
 
 ```{r plot-map-pseudotime}
-plot(oui, what = "map")
+plot(oui, what = "behaviour")
 ```
 
 and heatmaps of gene expression ordered by pseudotime trace:
 
 ```{r plot-pseudotime-trace, fig.width = 8}
-plot(oui, what = "trace", nrow = 3)
+plot(oui, what = "heatmap", nrow = 3)
 ```
 
 the MAP pseudotime against the 'true' pseudotime:
@@ -89,11 +89,31 @@ ggplot(data.frame(true_pst = true_pst, tmap = tmap)) +
 ```
 
 
-## An example with real data
 
+## Inference types
 
+[Stan](http://mc-stan.org) now supports two types of inference: 
 
-## Advanced tuning of priors
+* Hamiltonian Monte Carlo (HMC) - full MCMC inference where gradient information of the log-posterior is used to "guide" the random walk through the parameter space
+* Automatic Differentiation Variational Bayes (ADVI or simply VI) - approximate inference where the KL divergence to an approximate distribution is minimised
+
+In general, HMC will provide more accurate inference with approximately correct posterior variance for all parameters. However, VB is orders of magnitude quicker than HMC and while it may underestimate posterior variance, anecdotally it seems just as good as HMC for discovering posterior pseudotimes. *If you are using Ouija on more than just a small panel of marker genes it is highly recommended to use Variational Bayes*.
+
+These inference types may be invoked using the `inference_type` argument:
+
+```{r inference-type, results = "hide"}
+oui_vb <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), 
+                inference_type = "vb")
+
+```
+
+and we can examine the concordance with the HMC result:
+
+```{r compare_hmc, fig.width = 4, fig.height = 3}
+ggplot(data.frame(hmc = map_pseudotime(oui), vb = map_pseudotime(oui_vb)),
+       aes(x = hmc, y = vb)) +
+  geom_point() + xlab("HMC pseudotime") + ylab("Variational Bayes pseudotime")
+```
 
 
 ## Technical info

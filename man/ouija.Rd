@@ -6,7 +6,8 @@
 \usage{
 ouija(x, strengths = NULL, times = NULL, strength_sd = NULL,
   time_sd = NULL, response = c("nonlinear", "linear"), warn_lp = TRUE,
-  lp_gradient_threshold = 0.01, ...)
+  lp_gradient_threshold = 0.01, student_df = 2, inference_type = c("hmc",
+  "vb"), ...)
 }
 \arguments{
 \item{x}{Either an \code{SCESet} from \code{scater} or a
@@ -32,6 +33,12 @@ falls above a threshold (set by \code{lp_gradient_threshold}) then the user is w
 \item{lp_gradient_threshold}{The threshold for convergence warning. If the slope of regressing
 the log-probability of the model against the iteration number falls above this value then
 the user is warned.}
+
+\item{student_df}{Degrees of freedom for the student's t likelihood}
+
+\item{inference_type}{The type of inference to be performed, either \code{hmc} for Hamiltonian
+Monte Carlo or \code{vb} for ADVI (Variational Bayes). Note that HMC is typically more accurate
+but VB will be orders of magnitude faster.}
 
 \item{...}{Additional arguments to \code{rstan::sampling}}
 }
