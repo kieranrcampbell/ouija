@@ -55,7 +55,7 @@ ouija <- function(x,
   Y <- NULL
   if(is(x, "SCESet")) {
     ## convert to expression matrix Y  
-    Y <- t(scater::exprs(x))
+    Y <- t(Biobase::exprs(x))
   } else {
     Y <- x
   }
