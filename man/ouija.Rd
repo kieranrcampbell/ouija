@@ -6,8 +6,8 @@
 \usage{
 ouija(x, strengths = NULL, times = NULL, strength_sd = NULL,
   time_sd = NULL, response = c("nonlinear", "linear"), warn_lp = TRUE,
-  lp_gradient_threshold = 0.01, student_df = 2, inference_type = c("hmc",
-  "vb"), ...)
+  lp_gradient_threshold = 0.01, student_df = 10, inference_type = c("hmc",
+  "vb"), normalise_expression = TRUE, ...)
 }
 \arguments{
 \item{x}{Either an \code{SCESet} from \code{scater} or a
@@ -39,6 +39,10 @@ the user is warned.}
 \item{inference_type}{The type of inference to be performed, either \code{hmc} for Hamiltonian
 Monte Carlo or \code{vb} for ADVI (Variational Bayes). Note that HMC is typically more accurate
 but VB will be orders of magnitude faster.}
+
+\item{normalise_expression}{Logical, default TRUE. If TRUE the data is pre-normalised
+so the average peak expression is approximately 1. This makes the strength parameters
+approximately comparable between genes.}
 
 \item{...}{Additional arguments to \code{rstan::sampling}}
 }

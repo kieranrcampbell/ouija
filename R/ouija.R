@@ -34,7 +34,12 @@
 #' Monte Carlo or \code{vb} for ADVI (Variational Bayes). Note that HMC is typically more accurate
 #' but VB will be orders of magnitude faster.
 #' 
+#' @param normalise_expression Logical, default TRUE. If TRUE the data is pre-normalised
+#' so the average peak expression is approximately 1. This makes the strength parameters
+#' approximately comparable between genes.
+#' 
 #' @import rstan
+#' @import stats
 #' 
 #' @export
 #' 
@@ -45,8 +50,9 @@ ouija <- function(x,
                   response = c("nonlinear", "linear"),
                   warn_lp = TRUE,
                   lp_gradient_threshold = 1e-2,
-                  student_df = 2,
+                  student_df = 10,
                   inference_type = c("hmc", "vb"),
+                  normalise_expression = TRUE,
                   ...) {
   library(rstan) # for some reason this is required despite the @import rstan
   
@@ -79,6 +85,12 @@ ouija <- function(x,
   
   if(student_df <= 0) {
     stop("Degrees of freedom of student distribution must be positive")
+  }
+  
+  ## -- Normalise the dataset -- ##
+  if(normalise_expression) {
+    norm_factors <- apply(Y, 2, function(x) mean(x[x > 0]))
+    Y <- t(t(Y) / norm_factors)
   }
   
   # we can fill in some values if they're null
@@ -142,7 +154,8 @@ ouija <- function(x,
                         iter = stanargs$iter, chains = stanargs$chains,
                         thin = stanargs$thin,
                         strengths = strengths, strength_sd = strength_sd,
-                        times = times, time_sd = time_sd), 
+                        times = times, time_sd = time_sd,
+                        normalise_expression = normalise_expression), 
                   class = "ouija_fit")
   return(oui)
 }
@@ -570,6 +583,7 @@ plot_ouija_fit_dropout_probability <- function(oui, posterior_samples = 40) {
 #' @import ggplot2
 #' @importFrom reshape2 melt
 #' @importFrom magrittr "%>%"
+#' @import stats
 plot_ouija_fit_pp <- function(oui, genes = seq_len(ncol(oui$Y)), param = c("k", "t0")) {
   stopifnot(is(oui, "ouija_fit"))
   ngenes <- ncol(oui$Y)
