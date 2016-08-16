@@ -8,7 +8,7 @@ Description: Ouija learns trajectories or 'pseudotimes' from single-cell RNA-seq
   encoded as informative priors in the model.
 Depends:
     R (>= 3.2.0)
-License: MIT
+License: GPL (>= 2)
 LazyData: true
 Imports:
     ggplot2,
