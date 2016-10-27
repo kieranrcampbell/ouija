@@ -37,8 +37,8 @@ transformed parameters {
 
   for(g in 1:G) {
     for(i in 1:N) {
-      mu[g][i] <- 2 * mu0[g] / (1 + exp(-k[g] * (t[i] - t0[g])));
-      ysd[g][i] <- sqrt( (1 + phi) * mu[g][i] + 0.01);
+      mu[g][i] = 2 * mu0[g] / (1 + exp(-k[g] * (t[i] - t0[g])));
+      ysd[g][i] = sqrt( (1 + phi) * mu[g][i] + 0.01);
     }
   }
 }
@@ -63,13 +63,12 @@ model {
   for(g in 1:G) {
     for(i in 1:N) {
       if(Y[g][i] == 0) {
-        increment_log_prob(log_sum_exp(bernoulli_logit_log(1, 
-        beta[1] + beta[2] * mu[g][i]),
-        bernoulli_logit_log(0, beta[1] + beta[2] * mu[g][i]) + 
-        student_t_log(Y[g][i], student_df, mu[g][i], ysd[g][i])));
+        target += log_sum_exp(bernoulli_logit_lpmf(1 | beta[1] + beta[2] * mu[g][i]),
+                              bernoulli_logit_lpmf(0 | beta[1] + beta[2] * mu[g][i]) + 
+                              student_t_lpdf(Y[g][i] | student_df, mu[g][i], ysd[g][i]));
       } else {
-        increment_log_prob(bernoulli_logit_log(0, beta[1] + beta[2] * mu[g][i]) + 
-        student_t_log(Y[g][i], student_df, mu[g][i], ysd[g][i]));
+        target += bernoulli_logit_lpmf(0 | beta[1] + beta[2] * mu[g][i]) + 
+        student_t_lpdf(Y[g][i] | student_df, mu[g][i], ysd[g][i]);
       }
     }
   }

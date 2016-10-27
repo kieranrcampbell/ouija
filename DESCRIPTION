@@ -12,7 +12,7 @@ License: GPL (>= 2)
 LazyData: true
 Imports:
     ggplot2,
-    rstan,
+    rstan (>= 2.10.1),
     MCMCglmm,
     coda,
     cowplot,
