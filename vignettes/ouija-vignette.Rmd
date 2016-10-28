@@ -17,7 +17,7 @@ theme_set(theme_bw())
 
 set.seed(1L)
 
-knitr::opts_chunk$set(echo = TRUE, cache = TRUE, 
+knitr::opts_chunk$set(echo = TRUE, # cache = TRUE, 
                       message = FALSE, warning = FALSE,
                       fig.center = TRUE, fig.width = 6, fig.height = 4)
 ```
