@@ -54,7 +54,8 @@ ouija <- function(x,
                   inference_type = c("hmc", "vb"),
                   normalise_expression = TRUE,
                   ...) {
-  library(rstan) # for some reason this is required despite the @import rstan
+  
+  requireNamespace('rstan')
   
   inference_type <- match.arg(inference_type)
   
@@ -359,6 +360,7 @@ plot_ouija_fit_diagnostics <- function(oui, arrange = c("vertical", "horizontal"
 #' @importFrom cowplot plot_grid
 #' @importFrom viridis scale_fill_viridis
 #' @importFrom reshape2 melt
+#' @importFrom methods is
 #' 
 #' @export
 #' 
@@ -382,6 +384,7 @@ plot_ouija_fit_heatmap <- function(oui, samples = 50, genes = seq_len(min(oui$G,
     Xg$x <- 1:nrow(Xg)
     Xm <- melt(Xg, id.vars = "x", variable.name = "y", value.name = "Expression")
     
+    x <- y <- Expression <- NULL
     plt <- ggplot(Xm, aes(x = x, y = y, fill = Expression)) + geom_tile() +
       xlab("Cell") + ylab(expression("Pseudotime\n sample")) + 
       scale_fill_viridis() + 
@@ -436,6 +439,7 @@ tsigmoid <- function(mu0, k, t0, t) {
 #' @importFrom coda mcmc
 #' @importFrom dplyr inner_join
 #' @import ggplot2
+#' @importFrom methods is
 #' 
 #' @export
 #' 
@@ -470,6 +474,7 @@ plot_ouija_fit_behaviour <- function(oui, genes = seq_len(min(oui$G, 6)),
               value.name = "predicted_expression")
   
   dm_joined <- inner_join(dm, dm2, by = c("pseudotime", "gene"))
+  pseudotime <- predicted_expression <- NULL
   
   plt <- ggplot(dm_joined, aes(x = pseudotime, y = expression, colour = "Measured")) + 
     geom_point() +
@@ -495,6 +500,7 @@ plot_ouija_fit_behaviour <- function(oui, genes = seq_len(min(oui$G, 6)),
 #' @export
 #' @import ggplot2
 #' @importFrom magrittr "%>%"
+#' @importFrom methods is
 #' 
 #' @return Either a list of plots of class \code{ggplot} or a single 
 #' \code{ggplot} showing them
@@ -509,6 +515,9 @@ plot_ouija_fit_comparison <- function(oui, return_plotlist = FALSE) {
     
     dfx <- data.frame(Xp, pseudotime = rank(tmap)) %>%
       melt(id.vars = "pseudotime", variable.name = "gene", value.name = "expression")
+    
+    pseudotime <- gene <- NULL
+    
     ggplot(dfx, aes(x = pseudotime, y = gene, fill = expression)) + 
       geom_tile() + scale_fill_viridis(name = expression("Relative\nexpression")) + 
       theme_bw() + 
@@ -541,6 +550,7 @@ plot_ouija_fit_comparison <- function(oui, return_plotlist = FALSE) {
 #' @importFrom rstan extract
 #' @importFrom MCMCglmm posterior.mode
 #' @importFrom coda mcmc
+#' @importFrom methods is
 #' @export
 #' 
 #' @return An object of type \code{ggplot}
@@ -551,6 +561,7 @@ plot_ouija_fit_dropout_probability <- function(oui, posterior_samples = 40) {
   ext <- extract(oui$fit, "beta")
   beta_map <- posterior.mode(mcmc(ext$beta))
   
+  Mean_expression <- NULL
   plt <- ggplot(data.frame(Mean_expression = x_range), aes(x = Mean_expression)) 
 
 
@@ -584,6 +595,7 @@ plot_ouija_fit_dropout_probability <- function(oui, posterior_samples = 40) {
 #' @importFrom reshape2 melt
 #' @importFrom magrittr "%>%"
 #' @import stats
+#' @importFrom methods is
 plot_ouija_fit_pp <- function(oui, genes = seq_len(ncol(oui$Y)), param = c("k", "t0")) {
   stopifnot(is(oui, "ouija_fit"))
   ngenes <- ncol(oui$Y)
@@ -614,6 +626,8 @@ plot_ouija_fit_pp <- function(oui, genes = seq_len(ncol(oui$Y)), param = c("k", 
     return(dm)
   })
   dfs <- do.call(rbind, dfs)
+  
+  Sample <- Prob <- NULL
   
   ggplot(dfs, aes(x = Sample, fill = Prob)) + geom_density(colour = "Black", alpha = 0.8) +
     cowplot::theme_cowplot() +

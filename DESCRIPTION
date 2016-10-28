@@ -12,7 +12,7 @@ License: GPL (>= 2)
 LazyData: true
 Imports:
     ggplot2,
-    rstan (>= 2.10.1),
+    rstan (>= 2.12.1),
     MCMCglmm,
     coda,
     cowplot,
@@ -20,9 +20,11 @@ Imports:
     viridis,
     dplyr,
     matrixStats,
-    magrittr
+    magrittr,
+    methods
 RoxygenNote: 5.0.1
 Suggests: knitr,
     rmarkdown,
-    testthat
+    testthat,
+    Biobase
 VignetteBuilder: knitr
