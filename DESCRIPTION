@@ -1,30 +1,34 @@
 Package: ouija
+Type: Package
 Title: Incorporating prior knowledge in single-cell trajectory learning using
     Bayesian nonlinear factor analysis
-Version: 0.1.3
-Authors@R: person("Kieran", "Campbell", email = "kieranc@well.ox.ac.uk", role = c("aut", "cre"))
+Version: 0.99.0
+Date: 2016-10-27
+Authors@R: person("Kieran", "Campbell", email = "kieranrcampbell@gmail.com", role = c("aut", "cre"))
 Description: Ouija learns trajectories or 'pseudotimes' from single-cell RNA-seq data. Using Bayesian 
   nonlinear factor analysis biological knowledge of gene expression across pseudotime can be
   encoded as informative priors in the model.
-Depends:
-    R (>= 3.2.0)
-License: GPL (>= 2)
-LazyData: true
-Imports:
-    ggplot2,
-    rstan (>= 2.12.1),
-    MCMCglmm,
-    coda,
-    cowplot,
-    reshape2,
-    viridis,
-    dplyr,
-    matrixStats,
-    magrittr,
-    methods
+License: GPL (>=3)
+Depends: R (>= 3.3), Rcpp (>= 0.11.0)
+Imports: 
+  rstan (>= 2.9.0),
+  ggplot2,
+  MCMCglmm,
+  coda,
+  cowplot,
+  reshape2,
+  viridis,
+  dplyr,
+  magrittr,
+  methods,
+  stats
+biocViews: Software, Transcriptomics, GeneExpression, RNASeq, SingleCell
+LinkingTo: StanHeaders (>= 2.9.0), rstan (>= 2.9.0), BH (>= 1.60.0), Rcpp (>= 0.12.0), RcppEigen
+NeedsCompilation: yes
 RoxygenNote: 5.0.1
 Suggests: knitr,
     rmarkdown,
     testthat,
-    Biobase
+    Biobase,
+    scater
 VignetteBuilder: knitr

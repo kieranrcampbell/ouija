@@ -119,5 +119,5 @@ ggplot(data.frame(hmc = map_pseudotime(oui), vb = map_pseudotime(oui_vb)),
 ## Technical info
 
 ```{r sess-info}
-devtools::session_info()
+sessionInfo()
 ```

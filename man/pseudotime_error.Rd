@@ -5,7 +5,7 @@
 \alias{pseudotime_error.ouija_fit}
 \title{Pseudotime errors}
 \usage{
-pseudotime_error(oui)
+pseudotime_error(oui, prob)
 
 \method{pseudotime_error}{ouija_fit}(oui, prob = 0.95)
 }

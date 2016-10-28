@@ -40,10 +40,14 @@
 #' 
 #' @import rstan
 #' @import stats
+#' @importFrom Rcpp loadModule
 #' 
 #' @export
 #' 
 #' @return An object of type \code{ouija_fit}
+#' 
+#' @useDynLib ouija, .registration = TRUE
+#' @exportPattern ^[[:alpha:]]+
 ouija <- function(x, 
                   strengths = NULL, times = NULL,
                   strength_sd = NULL, time_sd = NULL,
@@ -62,8 +66,7 @@ ouija <- function(x,
   ## Find out what sort of model we're trying to fit
   response <- match.arg(response)
   if(response != "nonlinear") stop("Only nonlinear factor analysis currently supported")
-  
-  model_file <- "ouija.stan"
+
 
   Y <- NULL
   if(is(x, "SCESet")) {
@@ -113,8 +116,8 @@ ouija <- function(x,
                t0_means = times, t0_sd = time_sd,
                student_df = student_df)
   
-  stanfile <- system.file(model_file, package = "ouija")
-  model <- stan_model(stanfile)
+  
+  model <- stanmodels$ouija
   
   ## manipulate stan defaults
   stanargs <- list(...)
@@ -183,7 +186,7 @@ map_pseudotime.ouija_fit <- function(oui) {
 }
 
 #' @name pseudotime_error
-pseudotime_error <- function(oui) UseMethod("pseudotime_error")
+pseudotime_error <- function(oui, prob) UseMethod("pseudotime_error")
 
 #' Pseudotime errors
 #' 
@@ -644,8 +647,32 @@ plot_ouija_fit_pp <- function(oui, genes = seq_len(ncol(oui$Y)), param = c("k", 
 #' 
 "synth_gex"
 
-#' Synthetic gene pseudotimes
+#' Synthetic gene pseudotime vector
 #' 
 #' A vector with the 'true' pseudotimes for the synthetic 
 #' gene expression data in \code{synth_gex}
 "true_pst"
+
+#' Rstan internals
+#' 
+#' @name model_ouija
+#' 
+NULL
+
+#' Rstan internals
+#' 
+#' @name stan_files
+NULL
+
+#' Rstan internals
+#' 
+#' @name stanmodels
+NULL
+
+#' Rstan internals
+#' 
+#' @docType methods
+#' @rdname Rcpp_model_ouija-class
+#' 
+#' @name Rcpp_model_ouija-class
+NULL

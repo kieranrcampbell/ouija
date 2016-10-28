@@ -3,7 +3,7 @@
 \docType{data}
 \name{true_pst}
 \alias{true_pst}
-\title{Synthetic gene pseudotimes}
+\title{Synthetic gene pseudotime vector}
 \format{An object of class \code{numeric} of length 100.}
 \usage{
 true_pst
