@@ -23,4 +23,5 @@ is the sigmoid function applied to \code{t} using the parameters
 \description{
 Generic function to return sigmoid whenever needed
 }
+\keyword{internal}
 

@@ -18,8 +18,8 @@ LinkingTo: StanHeaders (>= 2.9.0), rstan (>= 2.9.0), BH (>= 1.60.0),
         Rcpp (>= 0.12.0), RcppEigen
 NeedsCompilation: yes
 RoxygenNote: 5.0.1
-Suggests: knitr, rmarkdown, testthat, Biobase, scater
-VignetteBuilder: knitr
+Suggests: rmarkdown, testthat, Biobase, scater
+VignetteBuilder: rmarkdown
 Packaged: 2016-10-28 12:43:18 UTC; kieranc
 Author: Kieran Campbell [aut, cre]
 Maintainer: Kieran Campbell <kieranrcampbell@gmail.com>

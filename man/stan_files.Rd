@@ -6,4 +6,5 @@
 \description{
 Rstan internals
 }
+\keyword{internal}
 

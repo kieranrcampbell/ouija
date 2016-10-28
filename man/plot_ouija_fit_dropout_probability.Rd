@@ -23,4 +23,9 @@ to latent expression \eqn{\mu_{ig}} via
 The red curve shows the MAP estimate of the relationship, while the grey lines show 
 posterior samples of the relationship.
 }
+\examples{
+data(synth_gex)
+oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+plot_ouija_fit_dropout_probability(oui)
+}
 

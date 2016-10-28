@@ -19,4 +19,9 @@ Either a list of plots of class \code{ggplot} or a single
 \description{
 Plot heatmaps showing comparisons of measured data and imputed
 }
+\examples{
+data(synth_gex)
+oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+plot_ouija_fit_comparison(oui)
+}
 

@@ -58,4 +58,8 @@ This function takes either a \code{SCESet} object or an expression matrix
 and returns a \code{ouija_fit} object including posterior traces for all
 variables.
 }
+\examples{
+data(synth_gex)
+oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+}
 

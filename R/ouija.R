@@ -48,6 +48,10 @@
 #' 
 #' @useDynLib ouija, .registration = TRUE
 #' @exportPattern ^[[:alpha:]]+
+#' 
+#' @examples 
+#' data(synth_gex)
+#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
 ouija <- function(x, 
                   strengths = NULL, times = NULL,
                   strength_sd = NULL, time_sd = NULL,
@@ -180,6 +184,11 @@ map_pseudotime <- function(oui) UseMethod("map_pseudotime")
 #' @name map_pseudotime
 #' 
 #' @return MAP pseudotime vector of length N
+#' 
+#' @examples 
+#' data(synth_gex)
+#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' tmap <- map_pseudotime(oui)
 map_pseudotime.ouija_fit <- function(oui) {
   stopifnot(is(oui, "ouija_fit"))
   posterior.mode(mcmc(extract(oui$fit, "t")$t))
@@ -204,6 +213,11 @@ pseudotime_error <- function(oui, prob) UseMethod("pseudotime_error")
 #' @return A matrix with two columns, where the first column gives the lower
 #' interval and the second gives the upper interval for the pseudotimes of
 #' each cell.
+#' 
+#' @examples 
+#' data(synth_gex)
+#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' pst_err <- pseudotime_error(oui)
 pseudotime_error.ouija_fit <- function(oui, prob = 0.95) {
   t_trace <- extract(oui$fit, "t")$t
   hpd <- HPDinterval(mcmc(t_trace), prob = prob)
@@ -229,6 +243,10 @@ rexprs <- function(oui) UseMethod("rexprs")
 #' 
 #' @export
 #' @name rexprs
+#' @examples 
+#' data(synth_gex)
+#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' pexp <- rexprs(oui)
 rexprs.ouija_fit <- function(oui) {
   stopifnot(is(oui, "ouija_fit"))
   Z <- apply(extract(oui$fit, "mu")$mu, 3, function(x) posterior.mode(mcmc(x)))
@@ -246,6 +264,10 @@ rexprs.ouija_fit <- function(oui) {
 #' @method print ouija_fit
 #' @export
 #' @return A character string representation of \code{x}
+#' @examples 
+#' data(synth_gex)
+#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' print(oui)
 print.ouija_fit <- function(x, ...) {
   itype <- switch(x$inference_type,
                   hmc = "Hamiltonian Monte Carlo",
@@ -298,6 +320,11 @@ print.ouija_fit <- function(x, ...) {
 #' @return A \code{ggplot2} plot.
 #' @method plot ouija_fit
 #' @export
+#' 
+#' @examples 
+#' data(synth_gex)
+#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' plot(oui)
 plot.ouija_fit <- function(x, what = c("behaviour", "behavior", "diagnostic", 
                                        "heatmap", "pp", "dropout"), ...) {
   what <- match.arg(what)
@@ -327,7 +354,10 @@ plot.ouija_fit <- function(x, what = c("behaviour", "behavior", "diagnostic",
 #' @importFrom cowplot plot_grid
 #' 
 #' @return A \code{ggplot2} object
-#' 
+#' @examples 
+#' data(synth_gex)
+#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' plot_ouija_fit_diagnostics(oui)
 plot_ouija_fit_diagnostics <- function(oui, arrange = c("vertical", "horizontal")) {
   stopifnot(is(oui, "ouija_fit"))
   
@@ -368,6 +398,10 @@ plot_ouija_fit_diagnostics <- function(oui, arrange = c("vertical", "horizontal"
 #' @export
 #' 
 #' @return A \code{ggplot2} object.
+#' @examples 
+#' data(synth_gex)
+#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' plot_ouija_fit_heatmap(oui)
 plot_ouija_fit_heatmap <- function(oui, samples = 50, genes = seq_len(min(oui$G, 6)),
                                  output = c("grid", "plotlist"), 
                                  show_legend = FALSE, ...) {
@@ -418,6 +452,8 @@ plot_ouija_fit_heatmap <- function(oui, samples = 50, genes = seq_len(min(oui$G,
 #' @return A numeric vector of length \code{length(t)} that
 #' is the sigmoid function applied to \code{t} using the parameters
 #' \code{mu0}, \code{k} and \code{t0}.
+#' 
+#' @keywords internal
 #'
 #' @export
 tsigmoid <- function(mu0, k, t0, t) {
@@ -447,6 +483,10 @@ tsigmoid <- function(mu0, k, t0, t) {
 #' @export
 #' 
 #' @return An object of class \code{ggplot2}
+#' @examples 
+#' data(synth_gex)
+#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' plot_ouija_fit_behaviour(oui)
 plot_ouija_fit_behaviour <- function(oui, genes = seq_len(min(oui$G, 6)),
                                expression_units = "log2(TPM+1)") {
   stopifnot(is(oui, "ouija_fit"))
@@ -507,6 +547,11 @@ plot_ouija_fit_behaviour <- function(oui, genes = seq_len(min(oui$G, 6)),
 #' 
 #' @return Either a list of plots of class \code{ggplot} or a single 
 #' \code{ggplot} showing them
+#' 
+#' @examples 
+#' data(synth_gex)
+#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' plot_ouija_fit_comparison(oui)
 plot_ouija_fit_comparison <- function(oui, return_plotlist = FALSE) {
   stopifnot(is(oui, "ouija_fit"))
   X <- oui$Y
@@ -557,6 +602,11 @@ plot_ouija_fit_comparison <- function(oui, return_plotlist = FALSE) {
 #' @export
 #' 
 #' @return An object of type \code{ggplot}
+#' 
+#' @examples 
+#' data(synth_gex)
+#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' plot_ouija_fit_dropout_probability(oui)
 plot_ouija_fit_dropout_probability <- function(oui, posterior_samples = 40) {
   stopifnot(is(oui, "ouija_fit"))
   x_range <- range(as.vector(oui$Y))
@@ -599,6 +649,11 @@ plot_ouija_fit_dropout_probability <- function(oui, posterior_samples = 40) {
 #' @importFrom magrittr "%>%"
 #' @import stats
 #' @importFrom methods is
+#' 
+#' @examples 
+#' data(synth_gex)
+#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' plot_ouija_fit_pp(oui)
 plot_ouija_fit_pp <- function(oui, genes = seq_len(ncol(oui$Y)), param = c("k", "t0")) {
   stopifnot(is(oui, "ouija_fit"))
   ngenes <- ncol(oui$Y)
@@ -656,10 +711,13 @@ plot_ouija_fit_pp <- function(oui, genes = seq_len(ncol(oui$Y)), param = c("k", 
 #' Rstan internals
 #' 
 #' @name model_ouija
+#' @keywords internal
 #' 
 NULL
 
 #' Rstan internals
+#' 
+#' @keywords internal
 #' 
 #' @name stan_files
 NULL
@@ -667,12 +725,14 @@ NULL
 #' Rstan internals
 #' 
 #' @name stanmodels
+#' @keywords internal
 NULL
 
 #' Rstan internals
 #' 
 #' @docType methods
 #' @rdname Rcpp_model_ouija-class
+#' @keywords internal
 #' 
 #' @name Rcpp_model_ouija-class
 NULL

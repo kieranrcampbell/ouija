@@ -31,4 +31,9 @@ A \code{ggplot2} object.
 Produces a heatmap of gene expression as a function of pseudotime
 across different pseudotime samples.
 }
+\examples{
+data(synth_gex)
+oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+plot_ouija_fit_heatmap(oui)
+}
 

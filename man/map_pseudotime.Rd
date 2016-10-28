@@ -18,4 +18,9 @@ MAP pseudotime vector of length N
 \description{
 Extract the MAP pseudotime estimates from a \code{ouija_fit}
 }
+\examples{
+data(synth_gex)
+oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+tmap <- map_pseudotime(oui)
+}
 

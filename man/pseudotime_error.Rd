@@ -22,4 +22,9 @@ each cell.
 \description{
 Returns the highest probability credible intervals for each cell.
 }
+\examples{
+data(synth_gex)
+oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+pst_err <- pseudotime_error(oui)
+}
 

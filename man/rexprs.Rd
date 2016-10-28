@@ -21,4 +21,9 @@ Reconstructed expression
 
 The reconstructed (ie predicted) expression from the fit.
 }
+\examples{
+data(synth_gex)
+oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+pexp <- rexprs(oui)
+}
 

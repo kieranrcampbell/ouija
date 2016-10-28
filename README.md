@@ -14,7 +14,8 @@ devtools::install_github("kieranrcampbell/ouija")
 To build the Ouija vignette install using
 
 ```R
-devtools::install_github("kieranrcampbell/ouija", build_vignettes = TRUE)
+devtools::install_github("kieranrcampbell/ouija", local = FALSE, 
+                          args = "--preclean", build_vignettes = TRUE)
 ```
 
 ### Model fitting

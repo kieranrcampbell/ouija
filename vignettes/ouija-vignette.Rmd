@@ -54,7 +54,7 @@ ggplot(dex_melted, aes(x = pseudotime, y = expression)) + geom_point() +
 
 In order to fit the Bayesian non-linear factor analysis model, we simply call `ouija`. The 
 ```{r ouija-fit}
-oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1))
+oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 1000)
 print(oui)
 ```
 

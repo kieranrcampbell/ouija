@@ -24,4 +24,9 @@ for a \code{ouija_fit} object.
 Further assessment of convergence can be done using \code{rstan} functions on the
 underlying STAN object (accessed through \code{oui$fit}).
 }
+\examples{
+data(synth_gex)
+oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+plot_ouija_fit_diagnostics(oui)
+}
 

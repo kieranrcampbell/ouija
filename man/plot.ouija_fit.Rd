@@ -46,4 +46,9 @@ activation parameters.
 value and dropout probability. 
 }
 }
+\examples{
+data(synth_gex)
+oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+plot(oui)
+}
 
