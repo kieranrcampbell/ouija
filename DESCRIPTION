@@ -13,7 +13,7 @@ Depends: R (>= 3.3), Rcpp (>= 0.11.0)
 Imports: rstan (>= 2.9.0), ggplot2, MCMCglmm, coda, cowplot, reshape2,
         viridis, dplyr, magrittr, methods, stats
 biocViews: Software, Transcriptomics, GeneExpression, RNASeq,
-        SingleCell
+        SingleCell, Bayesian
 LinkingTo: StanHeaders (>= 2.9.0), rstan (>= 2.9.0), BH (>= 1.60.0),
         Rcpp (>= 0.12.0), RcppEigen
 NeedsCompilation: yes

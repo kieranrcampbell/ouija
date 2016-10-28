@@ -8,9 +8,16 @@
 \usage{
 true_pst
 }
+\value{
+A vector with the 'true' pseudotimes for the synthetic 
+gene expression data in \code{synth_gex}
+}
 \description{
 A vector with the 'true' pseudotimes for the synthetic 
 gene expression data in \code{synth_gex}
+}
+\examples{
+data(true_pst)
 }
 \keyword{datasets}
 

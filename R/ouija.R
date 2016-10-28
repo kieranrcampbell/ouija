@@ -456,6 +456,9 @@ plot_ouija_fit_heatmap <- function(oui, samples = 50, genes = seq_len(min(oui$G,
 #' @keywords internal
 #'
 #' @export
+#' 
+#' @examples 
+#' tsigmoid(1, 1, 0.5, runif(10))
 tsigmoid <- function(mu0, k, t0, t) {
   return( 2 * mu0 / (1 + exp(-k*(t - t0))))
 }
@@ -700,12 +703,23 @@ plot_ouija_fit_pp <- function(oui, genes = seq_len(ncol(oui$Y)), param = c("k", 
 #' A matrix containing some synthetic gene expression data for 
 #' 100 cells and 6 genes
 #' 
+#' @return A matrix containing some synthetic gene expression data for 
+#' 100 cells and 6 genes
+#' 
+#' @examples 
+#' data(synth_gex)
 "synth_gex"
 
 #' Synthetic gene pseudotime vector
 #' 
 #' A vector with the 'true' pseudotimes for the synthetic 
 #' gene expression data in \code{synth_gex}
+#' 
+#' @return A vector with the 'true' pseudotimes for the synthetic 
+#' gene expression data in \code{synth_gex}
+#' 
+#' @examples
+#' data(true_pst)
 "true_pst"
 
 #' Rstan internals

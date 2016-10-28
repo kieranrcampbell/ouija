@@ -23,5 +23,8 @@ is the sigmoid function applied to \code{t} using the parameters
 \description{
 Generic function to return sigmoid whenever needed
 }
+\examples{
+tsigmoid(1, 1, 0.5, runif(10))
+}
 \keyword{internal}
 

@@ -8,9 +8,16 @@
 \usage{
 synth_gex
 }
+\value{
+A matrix containing some synthetic gene expression data for 
+100 cells and 6 genes
+}
 \description{
 A matrix containing some synthetic gene expression data for 
 100 cells and 6 genes
+}
+\examples{
+data(synth_gex)
 }
 \keyword{datasets}
 
