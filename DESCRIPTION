@@ -2,7 +2,7 @@ Package: ouija
 Type: Package
 Title: Incorporating prior knowledge in single-cell trajectory learning
         using Bayesian nonlinear factor analysis
-Version: 0.99.1
+Version: 0.99.2
 Date: 2016-10-27
 Authors@R: person("Kieran", "Campbell", email = "kieranrcampbell@gmail.com", role = c("aut", "cre"))
 Description: Ouija learns trajectories or 'pseudotimes' from single-cell RNA-seq data. Using Bayesian 
@@ -18,8 +18,8 @@ LinkingTo: StanHeaders (>= 2.9.0), rstan (>= 2.9.0), BH (>= 1.60.0),
         Rcpp (>= 0.12.0), RcppEigen
 NeedsCompilation: yes
 RoxygenNote: 5.0.1
-Suggests: rmarkdown, testthat, Biobase, scater
-VignetteBuilder: rmarkdown
+Suggests: rmarkdown, testthat, Biobase, scater, knitr
+VignetteBuilder: knitr
 Packaged: 2016-10-28 12:43:18 UTC; kieranc
 Author: Kieran Campbell [aut, cre]
 Maintainer: Kieran Campbell <kieranrcampbell@gmail.com>
