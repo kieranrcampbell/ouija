@@ -2,7 +2,7 @@ Package: ouija
 Type: Package
 Title: Incorporating prior knowledge in single-cell trajectory learning
         using Bayesian nonlinear factor analysis
-Version: 0.99.2
+Version: 0.99.3
 Date: 2016-10-27
 Authors@R: person("Kieran", "Campbell", email = "kieranrcampbell@gmail.com", role = c("aut", "cre"))
 Description: Ouija learns trajectories or 'pseudotimes' from single-cell RNA-seq data. Using Bayesian 
