@@ -22,7 +22,7 @@ parameters {
   
   // parameters with user-defined priors
   real k[G];
-  real t0[G];
+  real<lower = 0, upper = 1> t0[G];
   
   real<lower = 0> mu_hyper;
   
