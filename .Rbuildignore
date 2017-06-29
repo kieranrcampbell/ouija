@@ -1,2 +1,3 @@
 cleanup*
 ^.*\.o$
+^\.travis\.yml$
