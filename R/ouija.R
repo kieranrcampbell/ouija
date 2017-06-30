@@ -46,9 +46,6 @@
 #' 
 #' @return An object of type \code{ouija_fit}
 #' 
-#' @useDynLib ouija, .registration = TRUE
-#' @exportPattern ^[[:alpha:]]+
-#' 
 #' @examples 
 #' data(synth_gex)
 #' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
@@ -63,7 +60,8 @@ ouija <- function(x,
                   normalise_expression = TRUE,
                   ...) {
   
-  requireNamespace('rstan')
+  # requireNamespace('rstan')
+  model_file <- "ouija.stan"
   
   inference_type <- match.arg(inference_type)
   
@@ -121,7 +119,8 @@ ouija <- function(x,
                student_df = student_df)
   
   
-  model <- stanmodels$ouija
+  stanfile <- system.file(model_file, package = "ouija")
+  model <- stan_model(stanfile, save_dso = FALSE, verbose = TRUE)
   
   ## manipulate stan defaults
   stanargs <- list(...)
@@ -168,9 +167,6 @@ ouija <- function(x,
   return(oui)
 }
 
-#' @name map_pseudotime
-#' @export
-map_pseudotime <- function(oui) UseMethod("map_pseudotime")
 
 #' Extract the MAP pseudotime estimates from a \code{ouija_fit}
 #'
@@ -186,16 +182,12 @@ map_pseudotime <- function(oui) UseMethod("map_pseudotime")
 #' @return MAP pseudotime vector of length N
 #' 
 #' @examples 
-#' data(synth_gex)
-#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' data(oui)
 #' tmap <- map_pseudotime(oui)
-map_pseudotime.ouija_fit <- function(oui) {
+map_pseudotime <- function(oui) {
   stopifnot(is(oui, "ouija_fit"))
   posterior.mode(mcmc(extract(oui$fit, "t")$t))
 }
-
-#' @name pseudotime_error
-pseudotime_error <- function(oui, prob) UseMethod("pseudotime_error")
 
 #' Pseudotime errors
 #' 
@@ -215,18 +207,14 @@ pseudotime_error <- function(oui, prob) UseMethod("pseudotime_error")
 #' each cell.
 #' 
 #' @examples 
-#' data(synth_gex)
-#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' data(oui)
 #' pst_err <- pseudotime_error(oui)
-pseudotime_error.ouija_fit <- function(oui, prob = 0.95) {
+pseudotime_error <- function(oui, prob = 0.95) {
   t_trace <- extract(oui$fit, "t")$t
   hpd <- HPDinterval(mcmc(t_trace), prob = prob)
   return( hpd )
 }
 
-#' Reconstructed expression
-#' @name rexprs
-rexprs <- function(oui) UseMethod("rexprs")
 
 #' Reconstructed expression
 #' 
@@ -244,10 +232,9 @@ rexprs <- function(oui) UseMethod("rexprs")
 #' @export
 #' @name rexprs
 #' @examples 
-#' data(synth_gex)
-#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' data(oui)
 #' pexp <- rexprs(oui)
-rexprs.ouija_fit <- function(oui) {
+rexprs <- function(oui) {
   stopifnot(is(oui, "ouija_fit"))
   Z <- apply(extract(oui$fit, "mu")$mu, 3, function(x) posterior.mode(mcmc(x)))
   Z <- t(Z)
@@ -265,8 +252,7 @@ rexprs.ouija_fit <- function(oui) {
 #' @export
 #' @return A character string representation of \code{x}
 #' @examples 
-#' data(synth_gex)
-#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' data(oui)
 #' print(oui)
 print.ouija_fit <- function(x, ...) {
   itype <- switch(x$inference_type,
@@ -322,8 +308,7 @@ print.ouija_fit <- function(x, ...) {
 #' @export
 #' 
 #' @examples 
-#' data(synth_gex)
-#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' data(oui)
 #' plot(oui)
 plot.ouija_fit <- function(x, what = c("behaviour", "behavior", "diagnostic", 
                                        "heatmap", "pp", "dropout"), ...) {
@@ -355,8 +340,7 @@ plot.ouija_fit <- function(x, what = c("behaviour", "behavior", "diagnostic",
 #' 
 #' @return A \code{ggplot2} object
 #' @examples 
-#' data(synth_gex)
-#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' data(oui)
 #' plot_ouija_fit_diagnostics(oui)
 plot_ouija_fit_diagnostics <- function(oui, arrange = c("vertical", "horizontal")) {
   stopifnot(is(oui, "ouija_fit"))
@@ -399,8 +383,7 @@ plot_ouija_fit_diagnostics <- function(oui, arrange = c("vertical", "horizontal"
 #' 
 #' @return A \code{ggplot2} object.
 #' @examples 
-#' data(synth_gex)
-#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' data(oui)
 #' plot_ouija_fit_heatmap(oui)
 plot_ouija_fit_heatmap <- function(oui, samples = 50, genes = seq_len(min(oui$G, 6)),
                                  output = c("grid", "plotlist"), 
@@ -487,8 +470,7 @@ tsigmoid <- function(mu0, k, t0, t) {
 #' 
 #' @return An object of class \code{ggplot2}
 #' @examples 
-#' data(synth_gex)
-#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' data(oui)
 #' plot_ouija_fit_behaviour(oui)
 plot_ouija_fit_behaviour <- function(oui, genes = seq_len(min(oui$G, 6)),
                                expression_units = "log2(TPM+1)") {
@@ -552,8 +534,7 @@ plot_ouija_fit_behaviour <- function(oui, genes = seq_len(min(oui$G, 6)),
 #' \code{ggplot} showing them
 #' 
 #' @examples 
-#' data(synth_gex)
-#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' data(oui)
 #' plot_ouija_fit_comparison(oui)
 plot_ouija_fit_comparison <- function(oui, return_plotlist = FALSE) {
   stopifnot(is(oui, "ouija_fit"))
@@ -607,8 +588,7 @@ plot_ouija_fit_comparison <- function(oui, return_plotlist = FALSE) {
 #' @return An object of type \code{ggplot}
 #' 
 #' @examples 
-#' data(synth_gex)
-#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' data(oui)
 #' plot_ouija_fit_dropout_probability(oui)
 plot_ouija_fit_dropout_probability <- function(oui, posterior_samples = 40) {
   stopifnot(is(oui, "ouija_fit"))
@@ -654,8 +634,7 @@ plot_ouija_fit_dropout_probability <- function(oui, posterior_samples = 40) {
 #' @importFrom methods is
 #' 
 #' @examples 
-#' data(synth_gex)
-#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' data(oui)
 #' plot_ouija_fit_pp(oui)
 plot_ouija_fit_pp <- function(oui, genes = seq_len(ncol(oui$Y)), param = c("k", "t0")) {
   stopifnot(is(oui, "ouija_fit"))
@@ -678,7 +657,7 @@ plot_ouija_fit_pp <- function(oui, genes = seq_len(ncol(oui$Y)), param = c("k", 
     sd <- oui$time_sd[genes]
   }
   dfs <- lapply(genes, function(g) {
-    posterior <- rstan::extract(oui$fit, param)[[param]][,g]
+    posterior <- extract(oui$fit, param)[[param]][,g]
     prior <- rnorm(length(posterior), mu[g], sd[g])
     
     dm <- data.frame(prior = prior, posterior = posterior) %>%
@@ -722,31 +701,12 @@ plot_ouija_fit_pp <- function(oui, genes = seq_len(ncol(oui$Y)), param = c("k", 
 #' data(true_pst)
 "true_pst"
 
-#' Rstan internals
+#' Precomputed Ouija fit
 #' 
-#' @name model_ouija
-#' @keywords internal
+#' The result of calling \code{oui <- ouija(synth_gex)} to avoid
+#' large times computing while testing.
 #' 
-NULL
-
-#' Rstan internals
-#' 
-#' @keywords internal
-#' 
-#' @name stan_files
-NULL
-
-#' Rstan internals
-#' 
-#' @name stanmodels
-#' @keywords internal
-NULL
-
-#' Rstan internals
-#' 
-#' @docType methods
-#' @rdname Rcpp_model_ouija-class
-#' @keywords internal
-#' 
-#' @name Rcpp_model_ouija-class
-NULL
+#' @seealso synth_gex
+#' @examples
+#' data(oui)
+"oui"

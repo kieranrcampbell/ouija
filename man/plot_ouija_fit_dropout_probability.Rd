@@ -24,8 +24,6 @@ The red curve shows the MAP estimate of the relationship, while the grey lines s
 posterior samples of the relationship.
 }
 \examples{
-data(synth_gex)
-oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+data(oui)
 plot_ouija_fit_dropout_probability(oui)
 }
-

@@ -1,10 +1,8 @@
 ---
 title: "Ouija: Incorporating prior knowledge in single-cell trajectory learning using Bayesian nonlinear factor analysis"
-author: "Kieran Campbell"
-date: "`r Sys.Date()`"
-output: 
-  rmarkdown::html_vignette:
-    toc: true
+author: "Kieran R Campbell"
+date: "July 2017"
+output: BiocStyle::html_document
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
   %\VignetteEngine{knitr::rmarkdown}

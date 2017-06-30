@@ -27,4 +27,3 @@ Generic function to return sigmoid whenever needed
 tsigmoid(1, 1, 0.5, runif(10))
 }
 \keyword{internal}
-

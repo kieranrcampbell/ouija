@@ -2,12 +2,9 @@
 % Please edit documentation in R/ouija.R
 \name{map_pseudotime}
 \alias{map_pseudotime}
-\alias{map_pseudotime.ouija_fit}
 \title{Extract the MAP pseudotime estimates from a \code{ouija_fit}}
 \usage{
 map_pseudotime(oui)
-
-\method{map_pseudotime}{ouija_fit}(oui)
 }
 \arguments{
 \item{oui}{An object of class \code{ouija_fit}.}
@@ -19,8 +16,6 @@ MAP pseudotime vector of length N
 Extract the MAP pseudotime estimates from a \code{ouija_fit}
 }
 \examples{
-data(synth_gex)
-oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+data(oui)
 tmap <- map_pseudotime(oui)
 }
-

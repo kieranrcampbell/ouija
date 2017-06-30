@@ -21,8 +21,6 @@ An object of class \code{ggplot2}
 Prior-posterior density plots for activation parameters
 }
 \examples{
-data(synth_gex)
-oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+data(oui)
 plot_ouija_fit_pp(oui)
 }
-

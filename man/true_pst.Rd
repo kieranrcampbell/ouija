@@ -20,4 +20,3 @@ gene expression data in \code{synth_gex}
 data(true_pst)
 }
 \keyword{datasets}
-

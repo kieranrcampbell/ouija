@@ -2,12 +2,9 @@
 % Please edit documentation in R/ouija.R
 \name{rexprs}
 \alias{rexprs}
-\alias{rexprs.ouija_fit}
 \title{Reconstructed expression}
 \usage{
 rexprs(oui)
-
-\method{rexprs}{ouija_fit}(oui)
 }
 \arguments{
 \item{oui}{An object of class \code{ouija_fit}.}
@@ -17,13 +14,9 @@ A matrix of the same dimension as \code{oui$Y} containing
 the predicted expression.
 }
 \description{
-Reconstructed expression
-
 The reconstructed (ie predicted) expression from the fit.
 }
 \examples{
-data(synth_gex)
-oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+data(oui)
 pexp <- rexprs(oui)
 }
-

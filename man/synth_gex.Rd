@@ -20,4 +20,3 @@ A matrix containing some synthetic gene expression data for
 data(synth_gex)
 }
 \keyword{datasets}
-

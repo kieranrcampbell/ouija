@@ -25,8 +25,6 @@ line denoting a LOESS fit (showing the overall trend). Genes are plotted with
 one per grid square (using a call to \code{facet_wrap(~ gene)}).
 }
 \examples{
-data(synth_gex)
-oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+data(oui)
 plot_ouija_fit_behaviour(oui)
 }
-

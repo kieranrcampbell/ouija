@@ -2,12 +2,9 @@
 % Please edit documentation in R/ouija.R
 \name{pseudotime_error}
 \alias{pseudotime_error}
-\alias{pseudotime_error.ouija_fit}
 \title{Pseudotime errors}
 \usage{
-pseudotime_error(oui, prob)
-
-\method{pseudotime_error}{ouija_fit}(oui, prob = 0.95)
+pseudotime_error(oui, prob = 0.95)
 }
 \arguments{
 \item{oui}{An object of class \code{ouija_fit}}
@@ -23,8 +20,6 @@ each cell.
 Returns the highest probability credible intervals for each cell.
 }
 \examples{
-data(synth_gex)
-oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+data(oui)
 pst_err <- pseudotime_error(oui)
 }
-
