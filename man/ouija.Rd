@@ -4,10 +4,11 @@
 \alias{ouija}
 \title{Fit a Ouija object.}
 \usage{
-ouija(x, strengths = NULL, times = NULL, strength_sd = NULL,
-  time_sd = NULL, response = c("nonlinear", "linear"), warn_lp = TRUE,
-  lp_gradient_threshold = 0.01, student_df = 10, inference_type = c("hmc",
-  "vb"), normalise_expression = TRUE, ...)
+ouija(x, response_type = "switch", strengths = NULL, times = NULL,
+  strength_sd = NULL, time_sd = NULL, peak_times = NULL,
+  bandwidths = NULL, peak_sd = NULL, bandwidth_sd = NULL,
+  warn_lp = TRUE, lp_gradient_threshold = 0.01, student_df = 10,
+  inference_type = c("hmc", "vb"), normalise_expression = TRUE, ...)
 }
 \arguments{
 \item{x}{Either an \code{SCESet} from \code{scater} or a
@@ -21,9 +22,6 @@ log2(TPM + 1) is recommended.}
 \item{strength_sd}{Optional standard deviations for k parameters}
 
 \item{time_sd}{Optional standard deviations for t0 parameters}
-
-\item{response}{The type of factor analysis, either \code{nonlinear} (default) 
-or \code{linear}}
 
 \item{warn_lp}{Ouija can perform a crude check of convergence in cases where may
 models are being fit and manual inspection may be cumbersome. The log-likelihood after
