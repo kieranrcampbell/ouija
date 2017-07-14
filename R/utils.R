@@ -95,10 +95,12 @@ predicted_expression <- function(oui) {
   return(pred_expr)
 }
 
+#' Sample predicted expression
+#' @export
 sample_predicted_expression <- function(oui) {
-  extr <- extract(oui$fit, pars = c("mu0", "k", "t0"))
-  sample_ind <- sample(seq_len(nrow(extr$mu0)), 1)
-  mu0 <- extr$mu0[sample_ind,]
+  extr <- extract(oui$fit, pars = c("mu0_switch", "k", "t0"))
+  sample_ind <- sample(seq_len(nrow(extr$mu0_switch)), 1)
+  mu0 <- extr$mu0_switch[sample_ind,]
   k <- extr$k[sample_ind,]
   t0 <- extr$t0[sample_ind,]
   sig_map <- mapply(tsigmoid, mu0, k, t0, 
@@ -193,4 +195,70 @@ cluster_confusion <- function(cmat, n_clusters = 2:9) {
   return(mc$classification)
 }
 
+#' Get regulation df
+#' @export
+#' @importFrom rstan extract
+#' @import dplyr
+regulation_df <- function(oui) {
+  response_type <- oui$response_type
+  G_switch <- sum(response_type == "switch")
+  G_transient <- sum(response_type == "transient")
+  gene_names <- colnames(oui$Y)
+  
+  switch_times <- extract(oui$fit, "t0")$t0
+  peak_times <- extract(oui$fit, "p")$p
+  
+  switch_map <- data.frame(
+    switch_index = seq_len(G_switch),
+    y_index = which(response_type == "switch")
+  )
+  
+  transient_map <- data.frame(
+    transient_index = seq_len(G_transient),
+    y_index = which(response_type == "transient")
+  )
+  
+  dfs <- list()
+  
+  for(i in 1:(oui$G-1)) {
+    for(j in (i+1):oui$G) {
+      gene_i <- gene_names[i]
+      rtype_i <- response_type[i]
+      gene_j <- gene_names[j]
+      rtype_j <- response_type[j]
+      param_i <- param_j <- NULL
+      
+      if(rtype_i == "switch") param_i <- switch_times[,dplyr::filter(switch_map, y_index == i) %>% .$switch_index]
+      if(rtype_j == "switch") param_j <- switch_times[,dplyr::filter(switch_map, y_index == j) %>% .$switch_index]
+      if(rtype_i == "transient") param_i <- peak_times[,dplyr::filter(transient_map, y_index == i) %>% .$transient_index]
+      if(rtype_j == "transient") param_j <- peak_times[,dplyr::filter(transient_map, y_index == j) %>% .$transient_index]
+      
+      df <- data_frame(gene_i = gene_i, rtype_i = rtype_i,
+                       gene_j = gene_j, rtype_j = rtype_j,
+                       param_diffs = param_i - param_j)
+      dfs[[length(dfs) + 1]] <- df
+    }
+  }
+  df_all <- bind_rows(dfs) %>% as_data_frame()
+  df_all <- mutate(df_all,
+                   label = paste(gene_i, "-", gene_j))
+  return(df_all)
+}
+
+
+#' Get significant regulation differences
+#' @export
+#' 
+significant_regulation <- function(reg_df) {
+  get_95 <- function(v, i) HPDinterval(mcmc(v))[1,i]
+  reg_df <- reg_df %>% 
+    group_by(label) %>% 
+    dplyr::summarise(mean_difference = mean(param_diffs),
+              lower_95 = get_95(param_diffs, 1),
+              upper_95 = get_95(param_diffs, 2))
+  reg_df <- mutate(reg_df, signif = FALSE)
+  reg_df$signif[reg_df$mean_difference < 0 & reg_df$upper_95 < 0] <- TRUE
+  reg_df$signif[reg_df$mean_difference > 0 & reg_df$lower_95 > 0] <- TRUE
+  reg_df
+}
 

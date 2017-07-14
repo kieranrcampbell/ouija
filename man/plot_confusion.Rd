@@ -4,7 +4,7 @@
 \alias{plot_confusion}
 \title{Plot confusion matrix}
 \usage{
-plot_confusion(oui, cmo = NULL)
+plot_confusion(oui, cmo = NULL, interpolate = FALSE)
 }
 \description{
 Plot confusion matrix

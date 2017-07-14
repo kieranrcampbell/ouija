@@ -10,8 +10,9 @@ Description: Ouija learns trajectories or 'pseudotimes' from single-cell RNA-seq
   encoded as informative priors in the model.
 License: GPL (>=3)
 Depends: R (>= 3.4.0), Rcpp (>= 0.12.0)
-Imports: rstan (>= 2.9.0), ggplot2, MCMCglmm, coda, cowplot, reshape2,
-        viridis, dplyr, magrittr, methods, stats
+Imports: rstan (>= 2.9.0), ggplot2, reshape2,
+        dplyr, methods, stats, MCMCglmm, coda
+Suggests: viridis, cowplot, tidyr
 biocViews: Software, Transcriptomics, GeneExpression, RNASeq,
         SingleCell, Bayesian
 NeedsCompilation: yes

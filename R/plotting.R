@@ -387,7 +387,7 @@ plot_ouija_fit_pp <- function(oui, genes = seq_len(ncol(oui$Y)), param = c("k", 
 
 #' Plot confusion matrix
 #' @export
-plot_confusion <- function(oui, cmo = NULL) {
+plot_confusion <- function(oui, cmo = NULL, interpolate = FALSE) {
   if(is.null(cmo)) cmo <- confusion_matrix_ordered(oui)
   diag(cmo) <- NA
   cmo_df <- as_data_frame(cmo)
@@ -396,15 +396,17 @@ plot_confusion <- function(oui, cmo = NULL) {
   cmo_df_tidy <- gather(cmo_df, y, value, -x)
   cmo_df_tidy$y <- as.numeric(cmo_df_tidy$y)
   ggplot(cmo_df_tidy, aes(x = x, y = y, fill = value)) +
-    geom_raster(interpolate = FALSE) + 
+    geom_raster(interpolate = interpolate) + 
     viridis::scale_fill_viridis(name = "P(i>j)") +
-    xlab(sprintf("Pseudotime order \u2192")) + ylab(sprintf("Pseudotime order \u2192"))
+    xlab(sprintf("Pseudotime order \u2192")) + ylab(sprintf("Pseudotime order \u2192")) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_continuous(expand = c(0,0)) +
+    theme(panel.background = element_blank())
 }
 
 #' Plot switch times
 #' @import viridis
 #' @importFrom rstan extract
-#' @importFrom MCMCglmm HPDInterval
 #' @importFrom coda mcmc
 plot_switch_times <- function(oui) {
   vpal <- viridis_pal()(8)
@@ -449,6 +451,8 @@ plot_transient_times <- function(oui) {
 }
 
 #' Plot fitted expression
+#' @import dplyr
+#' @importFrom tidyr gather
 #' @export
 plot_expression <- function(oui) {
   
@@ -476,4 +480,12 @@ plot_expression <- function(oui) {
     xlab("Ouija pseudotime") +
     scale_y_continuous(breaks = c(0, 0.5, 1, 1.5)) 
   
+}
+
+
+plot_regulations <- function(reg_df) {
+   ggplot(reg_df, aes(x = param_diffs)) +
+     geom_histogram() + facet_wrap(~ label) +
+     labs(x = "Difference in switch times", 
+          subtitle = "Posterior difference in regulation time")
 }
