@@ -338,7 +338,7 @@ plot_ouija_fit_dropout_probability <- function(oui, posterior_samples = 40) {
 #' @import ggplot2
 #' @importFrom reshape2 melt
 #' @importFrom magrittr "%>%"
-#' @import stats
+#' @importFrom stats rnorm
 #' @importFrom methods is
 #' 
 #' @examples 

@@ -37,7 +37,6 @@
 #' approximately comparable between genes.
 #' 
 #' @import rstan
-#' @import stats
 #' @importFrom Rcpp loadModule
 #' 
 #' @export
