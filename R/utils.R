@@ -186,6 +186,7 @@ confusion_matrix_ordered <- function(oui, cmat = NULL) {
 
 #' Cluster the confusion matrix
 #' @import mclust
+#' @import dplyr
 #' @export
 cluster_confusion <- function(cmat, n_clusters = 2:9) {
   diag(cmat) <- 0

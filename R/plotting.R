@@ -235,7 +235,6 @@ plot_ouija_fit_behaviour <- function(oui, genes = seq_len(min(oui$G, 6)),
 #' 
 #' @export
 #' @import ggplot2
-#' @importFrom magrittr "%>%"
 #' @importFrom methods is
 #' 
 #' @return Either a list of plots of class \code{ggplot} or a single 
@@ -337,7 +336,6 @@ plot_ouija_fit_dropout_probability <- function(oui, posterior_samples = 40) {
 #' @export
 #' @import ggplot2
 #' @importFrom reshape2 melt
-#' @importFrom magrittr "%>%"
 #' @importFrom stats rnorm
 #' @importFrom methods is
 #' 
