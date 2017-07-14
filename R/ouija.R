@@ -88,6 +88,7 @@ ouija <- function(x,
   }
   
   ## -- Normalise the dataset -- ##
+  norm_factors <- rep(1, G)
   if(normalise_expression) {
     norm_factors <- apply(Y, 2, function(x) mean(x[x > 0]))
     Y <- t(t(Y) / norm_factors)
