@@ -1,6 +1,11 @@
 # Ouija
 
-Ouija is a statistical framework for learning interpretable pseudotimes from single-cell RNA-seq data using only small panels of marker genes. 
+Ouija is a probabilistic pseudotime framework. Ouija 
+
+* infers pseudotimes from a **small number of marker genes** letting you understand **why** the pseudotimes have been learned in terms of those genes
+* provides parameter estimates (with uncertainty) for **interpretable gene regulation behaviour** (such as the peak time or the upregulation time)
+* has a Bayesian hypothesis test to **find genes regulated before others** along the trajectory
+* identifies **metastable states**, ie discrete cell types along the continuous trajectory
 
 <img src="inst/www/fig_main.png" width="600"/>
 
