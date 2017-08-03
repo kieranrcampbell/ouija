@@ -4,18 +4,18 @@
 \name{oui}
 \alias{oui}
 \title{Precomputed Ouija fit}
-\format{An object of class \code{ouija_fit} of length 13.}
+\format{An object of class \code{ouija_fit} of length 15.}
 \usage{
 oui
 }
 \description{
-The result of calling \code{oui <- ouija(synth_gex)} to avoid
+An example \code{ouija_fit} to avoid
 large times computing while testing.
 }
 \examples{
 data(oui)
 }
 \seealso{
-synth_gex
+example_gex
 }
 \keyword{datasets}

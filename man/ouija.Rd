@@ -57,6 +57,7 @@ and returns a \code{ouija_fit} object including posterior traces for all
 variables.
 }
 \examples{
-data(synth_gex)
-oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+data(example_gex)
+response_types <- c(rep("switch", 9), rep("transient", 2))
+oui <- ouija(example_gex, response_types = response_types, iter = 100)
 }

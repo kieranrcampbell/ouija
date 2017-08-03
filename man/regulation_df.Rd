@@ -9,3 +9,4 @@ regulation_df(oui)
 \description{
 Get regulation df
 }
+\keyword{internal}

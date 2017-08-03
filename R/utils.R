@@ -125,12 +125,15 @@ print.ouija_fit <- function(x, ...) {
   itype <- switch(x$inference_type,
                   hmc = "Hamiltonian Monte Carlo",
                   vb = "Variational Bayes")
-  msg <- paste("A Bayesian non-linear factor analysis fit with\n",
-               x$N, "cells and", x$G, "marker genes\n",
-               "Inference type: ", itype)
+  msg <- paste("A Ouija fit with",
+               x$N, "cells and", x$G, "marker genes",
+               "\nInference type: ", itype)
   if(x$inference_type == "hmc") {
-    msg <- paste(msg, "\nMCMC info:", x$iter, "iterations on", x$chains, "chains\n")
+    msg <- paste(msg, "\nMCMC info:", x$iter, "iterations on", x$chains, "chains")
   }
+  n_switch <- sum(response_type == "switch")
+  n_transient <- sum(response_type == "transient")
+  msg <- paste(msg, "\n(Gene behaviour) Switch/transient:",n_switch, "/", n_transient)
   cat(msg)
 }
 
@@ -160,35 +163,35 @@ transient <- function(mu0, p, b, t) {
   return( 2 * mu0 * exp(-10 * b * (t - p)^2) )
 }
 
-#' Create a confusion matrix
+#' Create a consistency matrix
 #' @export
-confusion_matrix <- function(oui) {
+consistency_matrix <- function(oui) {
   N <- oui$N
   pst_traces <- extract(oui$fit, "t")$t  
-  confusion_mat <- matrix(NA, nrow = N, ncol = N)
+  consistency_mat <- matrix(NA, nrow = N, ncol = N)
   for(i in 1:(N-1)) {
     for(j in (i+1):N) {
-      confusion_mat[i,j] <- mean(pst_traces[,i] > pst_traces[,j])
-      confusion_mat[j,i] <- 1 - confusion_mat[i,j]
+      consistency_mat[i,j] <- mean(pst_traces[,i] > pst_traces[,j])
+      consistency_mat[j,i] <- 1 - consistency_mat[i,j]
     }
   }
-  return(confusion_mat)
+  return(consistency_mat)
 }
 
-#' Order confusion matrix by pseudotime
+#' Order consistency matrix by pseudotime
 #' @export
-confusion_matrix_ordered <- function(oui, cmat = NULL) {
-  if(is.null(cmat)) cmat <- confusion_matrix(oui)
+consistency_matrix_ordered <- function(oui, cmat = NULL) {
+  if(is.null(cmat)) cmat <- consistency_matrix(oui)
   pst_order <- order(map_pseudotime(oui))
   cmat <- cmat[pst_order, pst_order]
   return(cmat)
 }
 
-#' Cluster the confusion matrix
+#' Cluster the consistency matrix
 #' @import mclust
 #' @import dplyr
 #' @export
-cluster_confusion <- function(cmat, n_clusters = 2:9) {
+cluster_consistency <- function(cmat, n_clusters = 2:9) {
   diag(cmat) <- 0
   pca <- prcomp(cmat)
   pc1 <- pca$x[,1]
@@ -197,9 +200,9 @@ cluster_confusion <- function(cmat, n_clusters = 2:9) {
 }
 
 #' Get regulation df
-#' @export
 #' @importFrom rstan extract
 #' @import dplyr
+#' @keywords internal
 regulation_df <- function(oui) {
   response_type <- oui$response_type
   G_switch <- sum(response_type == "switch")
@@ -249,8 +252,10 @@ regulation_df <- function(oui) {
 
 #' Get significant regulation differences
 #' @export
-#' 
-significant_regulation <- function(reg_df) {
+#' @importFrom coda mcmc
+#' @importFrom coda HPDInterval
+gene_regulation <- function(oui) {
+  reg_df <- regulation_df(oui)
   get_95 <- function(v, i) HPDinterval(mcmc(v))[1,i]
   reg_df <- reg_df %>% 
     group_by(label) %>% 

@@ -44,8 +44,9 @@
 #' @return An object of type \code{ouija_fit}
 #' 
 #' @examples 
-#' data(synth_gex)
-#' oui <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), iter = 100)
+#' data(example_gex)
+#' response_types <- c(rep("switch", 9), rep("transient", 2))
+#' oui <- ouija(example_gex, response_types = response_types, iter = 100)
 ouija <- function(x, 
                   response_type = "switch",
                   strengths = NULL, times = NULL,
@@ -107,7 +108,7 @@ ouija <- function(x,
   
   # we can fill in some values if they're null
   if(is.null(strengths)) strengths = rep(0, G_switch)
-  if(is.null(strength_sd)) strength_sd <- rep(1, G_switch)
+  if(is.null(strength_sd)) strength_sd <- rep(5, G_switch)
   if(is.null(times)) times <- rep(0.5, G_switch) ## change if constrained
   if(is.null(time_sd)) time_sd <- rep(1, G_switch)
   
@@ -141,6 +142,7 @@ ouija <- function(x,
   
   ## manipulate stan defaults
   stanargs <- list(...)
+  
   if(inference_type == "hmc") { # These are all MCMC parameters
     if(!('iter' %in% names(stanargs))) stanargs$iter <- 1e4
     if(!('warmup' %in% names(stanargs))) stanargs$warmup <- stanargs$iter / 2
@@ -149,18 +151,29 @@ ouija <- function(x,
       # always specify thin so that approximately 1000 samples are returned
       stanargs$thin <- ceiling((stanargs$iter - stanargs$warmup) / 1000)
     }
-    if(!('init' %in% names(stanargs))) {
-      ## We'll initialise to PC1 of switching genes if no init specified
-      pc1 <- prcomp(Y_switch)$x[,1]
-      pc1_scaled <- (pc1 - min(pc1) + 1e-2) / (max(pc1) - min(pc1) + 2e-2)
-      init_chain <- list(t = pc1_scaled)
+  }
+  if(!('init' %in% names(stanargs))) {
+    ## We'll initialise to PC1 of switching genes if no init specified
+    pc1 <- prcomp(Y_switch)$x[,1]
+    pc1_scaled <- (pc1 - min(pc1) + 1e-2) / (max(pc1) - min(pc1) + 2e-2)
+    
+    k_inits <- apply(Y_switch, 2, function(y) {
+      coef(lm(y ~ pc1_scaled))[2]
+    })
+    
+    if(inference_type == "hmc") {
       inits <- list()
+      init_chain <- list(t = pc1_scaled, k = k_inits)
       for(i in seq_len(stanargs$chains)) inits[[i]] <- init_chain
       stanargs$init <- inits
+    } else {
+      stanargs$init <- list(t = pc1_scaled, k = k_inits)
     }
   }
   stanargs$object <- model
   stanargs$data <- data
+  
+
   
   ## call inference
   fit <- NULL
@@ -195,36 +208,25 @@ ouija <- function(x,
   return(oui)
 }
 
-#' Synthetic gene expression matrix
+#' Example gene expression matrix
 #' 
-#' A matrix containing some synthetic gene expression data for 
-#' 100 cells and 6 genes
+#' A matrix containing some example gene expression data for 
+#' 400 cells and 11 genes, the first 9 of which exhibit switch-like
+#' expression and the 
 #' 
-#' @return A matrix containing some synthetic gene expression data for 
-#' 100 cells and 6 genes
+#' @return A 400-by-11 example expression matrix
 #' 
 #' @examples 
-#' data(synth_gex)
-"synth_gex"
+#' data(example_gex)
+"example_gex"
 
-#' Synthetic gene pseudotime vector
-#' 
-#' A vector with the 'true' pseudotimes for the synthetic 
-#' gene expression data in \code{synth_gex}
-#' 
-#' @return A vector with the 'true' pseudotimes for the synthetic 
-#' gene expression data in \code{synth_gex}
-#' 
-#' @examples
-#' data(true_pst)
-"true_pst"
 
 #' Precomputed Ouija fit
 #' 
-#' The result of calling \code{oui <- ouija(synth_gex)} to avoid
+#' An example \code{ouija_fit} to avoid
 #' large times computing while testing.
 #' 
-#' @seealso synth_gex
+#' @seealso example_gex
 #' @examples
 #' data(oui)
 "oui"

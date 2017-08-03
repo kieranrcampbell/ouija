@@ -4,7 +4,7 @@
 \alias{plot_expression}
 \title{Plot fitted expression}
 \usage{
-plot_expression(oui)
+plot_expression(oui, ncol = 2, nrow = NULL)
 }
 \description{
 Plot fitted expression
