@@ -17,7 +17,7 @@
 #' @return A \code{ggplot2} object
 #' @examples 
 #' data(oui)
-#' plot_ouija_fit_diagnostics(oui)
+#' plot_diagnostics(oui)
 plot_diagnostics <- function(oui, arrange = c("vertical", "horizontal")) {
   stopifnot(is(oui, "ouija_fit"))
   
@@ -34,9 +34,15 @@ plot_diagnostics <- function(oui, arrange = c("vertical", "horizontal")) {
 }
 
 
-#' Plot consistency matrix
+#' @name consistency
+#' @param cmo An optional ordered consistency matrix
+#' @param interpolate Passed to \code{geom_raster}
 #' @export
+#' @examples
+#' data(oui)
+#' plot_consistency(oui)
 plot_consistency <- function(oui, cmo = NULL, interpolate = FALSE) {
+  x <- value <- y <- gene <- ouija_pseudotime <- NULL
   if(is.null(cmo)) cmo <- consistency_matrix_ordered(oui)
   diag(cmo) <- NA
   cmo_df <- as_data_frame(cmo)
@@ -53,17 +59,19 @@ plot_consistency <- function(oui, cmo = NULL, interpolate = FALSE) {
     theme(panel.background = element_blank())
 }
 
-#' Plot switch times
+#' @name plotexprs
+#' @export
 #' @import viridis
 #' @importFrom rstan extract
 #' @importFrom coda mcmc
 plot_switch_times <- function(oui) {
+  Gene <- t0_mean <- lower <- upper <- NULL
   vpal <- viridis_pal()(8)
   k_trace <- extract(oui$fit, "k")$k
   kmean <- colMeans(k_trace)
   t0 <- extract(oui$fit, "t0")$t0
   t0_means <- colMeans(t0)
-  t0_interval <- HPDinterval(mcmc(t0))
+  t0_interval <- coda::HPDinterval(mcmc(t0))
   t0_df <- data_frame(t0_mean = t0_means, lower = t0_interval[,1], upper = t0_interval[,2],
                       kmean = kmean)
   t0_df$Gene <- colnames(oui$Y[, oui$response_type == "switch"])
@@ -79,12 +87,17 @@ plot_switch_times <- function(oui) {
     theme(legend.position = "top")
 }
 
-#' Plot transient times
+#' @name plotexprs
 #' @export
 plot_peak_times <- function(oui) {
+  if(sum(oui$response_type == "transient") == 0) {
+    stop("Fit must contain transient genes to plot peak times")
+  }
+  Gene <- p_mean <- lower <- upper <- NULL
+  
   p_trace <- extract(oui$fit, "p")$p
   p_means <- colMeans(p_trace)
-  p_interval <- HPDinterval(mcmc(p_trace))
+  p_interval <- coda::HPDinterval(mcmc(p_trace))
   p_df <- data_frame(p_mean = p_means, lower = p_interval[,1], upper = p_interval[,2])
   
   p_df$Gene <- colnames(oui$Y[, oui$response_type == "transient"])
@@ -99,12 +112,31 @@ plot_peak_times <- function(oui) {
     ylim(c(0,1))
 }
 
-#' Plot fitted expression
+#' Plot fitted expression, switch times, and peak times
+#' 
+#' Plot the expression along pseudotime with the maximum a posteriori (MAP)
+#' mean function as fitted by Ouija, or the MAP estimates of the
+#' switch and peak times along with 95% HPD credible interval error bars.
+#' 
+#' @param oui A \code{ouija_fit} to plot
+#' @param ncol The number of columns for the expression plot
+#' @param nrow The number of rows for the expression plot
+#' 
+#' @name plotexprs
 #' @import dplyr
 #' @import ggplot2
 #' @importFrom tidyr gather
 #' @export
+#' 
+#' @examples 
+#' data(oui)
+#' plot_expression(oui)
+#' plot_switch_times(oui)
+#' \dontrun{
+#' plot_peak_times(oui)
+#' }
 plot_expression <- function(oui, ncol = 2, nrow = NULL) {
+  gene <- ouija_pseudotime <- NULL
   
   expr_df <- as_data_frame(oui$Y) %>% 
     mutate(ouija_pseudotime = map_pseudotime(oui)) %>% 
@@ -133,9 +165,9 @@ plot_expression <- function(oui, ncol = 2, nrow = NULL) {
 }
 
 
-plot_regulations <- function(reg_df) {
-   ggplot(reg_df, aes(x = param_diffs)) +
-     geom_histogram() + facet_wrap(~ label) +
-     labs(x = "Difference in switch times", 
-          subtitle = "Posterior difference in regulation time")
-}
+# plot_regulations <- function(reg_df) {
+#    ggplot(reg_df, aes(x = param_diffs)) +
+#      geom_histogram() + facet_wrap(~ label) +
+#      labs(x = "Difference in switch times", 
+#           subtitle = "Posterior difference in regulation time")
+# }

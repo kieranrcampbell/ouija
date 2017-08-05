@@ -26,5 +26,5 @@ underlying STAN object (accessed through \code{oui$fit}).
 }
 \examples{
 data(oui)
-plot_ouija_fit_diagnostics(oui)
+plot_diagnostics(oui)
 }

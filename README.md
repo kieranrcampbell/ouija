@@ -2,14 +2,13 @@
 
 Ouija is a probabilistic pseudotime framework. Ouija 
 
-* infers pseudotimes from a **small number of marker genes** letting you understand **why** the pseudotimes have been learned in terms of those genes
-* provides parameter estimates (with uncertainty) for **interpretable gene regulation behaviour** (such as the peak time or the upregulation time)
-* has a Bayesian hypothesis test to **find genes regulated before others** along the trajectory
-* identifies **metastable states**, ie discrete cell types along the continuous trajectory
+* infers pseudotimes from a **small number of marker genes** letting you understand **why** the pseudotimes have been learned in terms of those genes (**A**)
+* provides parameter estimates (with uncertainty) for **interpretable gene regulation behaviour** (such as the peak time or the upregulation time) (**B**)
+* has a Bayesian hypothesis test to **find genes regulated before others** along the trajectory (**C**)
+* identifies **metastable states**, ie discrete cell types along the continuous trajectory (**D**)
 
 <img src="inst/www/fig_main.png" width="600"/>
 
-Ouija uses nonlinear factor analysis (**A**) where the pseudotimes are represented by the latent variables. It models gene expression behaviour as either sigmoidal or transient (**B**) which in turn provides interpretable parameter estimates such as switch and peak times of genes. This allows us to formulate a Bayesian hypothesis test to work out whether a gene is regulated before another (**C**). We can also use the probablistic formulation to identify metastable states over pseudotime (**D**).
 
 ## Getting started
 

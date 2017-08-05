@@ -4,33 +4,35 @@
 \alias{ouija}
 \title{Fit a Ouija object.}
 \usage{
-ouija(x, response_type = "switch", strengths = NULL, times = NULL,
-  strength_sd = NULL, time_sd = NULL, peak_times = NULL,
-  bandwidths = NULL, peak_sd = NULL, bandwidth_sd = NULL,
-  warn_lp = TRUE, lp_gradient_threshold = 0.01, student_df = 10,
-  inference_type = c("hmc", "vb"), normalise_expression = TRUE, ...)
+ouija(x, response_type = "switch", switch_strengths = NULL,
+  switch_times = NULL, switch_strength_sd = NULL, switch_time_sd = NULL,
+  peak_times = NULL, peak_lengths = NULL, peak_time_sd = NULL,
+  peak_length_sd = NULL, student_df = 10, inference_type = c("hmc", "vb"),
+  normalise_expression = TRUE, ...)
 }
 \arguments{
 \item{x}{Either an \code{SCESet} from \code{scater} or a
 cell-by-gene (N by G) matrix of non-negative values representing gene expression.
 log2(TPM + 1) is recommended.}
 
-\item{strengths}{G mean activation strength parameters}
+\item{response_type}{A vector declaring whether each gene exhibits "switch" or "transient"
+expression. Defaults to "switch" for all genes}
 
-\item{times}{G mean activation time parameters}
+\item{switch_strengths}{Prior means of switch strengths}
 
-\item{strength_sd}{Optional standard deviations for k parameters}
+\item{switch_times}{Prior means of switch times}
 
-\item{time_sd}{Optional standard deviations for t0 parameters}
+\item{switch_strength_sd}{Prior standard deviations of switch strengths}
 
-\item{warn_lp}{Ouija can perform a crude check of convergence in cases where may
-models are being fit and manual inspection may be cumbersome. The log-likelihood after
-the burn period is regressed off the iteration number, and if the gradient of the fit
-falls above a threshold (set by \code{lp_gradient_threshold}) then the user is warned.}
+\item{switch_time_sd}{Prior standard deviations of switch times}
 
-\item{lp_gradient_threshold}{The threshold for convergence warning. If the slope of regressing
-the log-probability of the model against the iteration number falls above this value then
-the user is warned.}
+\item{peak_times}{Prior means of peak times}
+
+\item{peak_lengths}{Prior means of peak lengths}
+
+\item{peak_time_sd}{Prior standard deviations of peak times}
+
+\item{peak_length_sd}{Prior standard deviations of peak lengths}
 
 \item{student_df}{Degrees of freedom for the student's t likelihood}
 
@@ -42,7 +44,7 @@ but VB will be orders of magnitude faster.}
 so the average peak expression is approximately 1. This makes the strength parameters
 approximately comparable between genes.}
 
-\item{...}{Additional arguments to \code{rstan::sampling}}
+\item{...}{Additional arguments to \code{rstan::sampling} or \code{rstan::vb}}
 }
 \value{
 An object of type \code{ouija_fit}
@@ -59,5 +61,5 @@ variables.
 \examples{
 data(example_gex)
 response_types <- c(rep("switch", 9), rep("transient", 2))
-oui <- ouija(example_gex, response_types = response_types, iter = 100)
+# oui <- ouija(example_gex, response_type = response_types, iter = 100)
 }

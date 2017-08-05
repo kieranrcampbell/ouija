@@ -44,21 +44,26 @@ example_gex[1:3, ]
 
 ## Response types
 
-We can infer the response type from the gene names:
+Using Ouija we can model genes as either exhibiting monotonic up or down regulation (known as switch-like behaviour), or transient behaviour where the gene briefly peaks. By default Ouija assumes all genes exhibit switch-like behaviour (and don't worry if you get it wrong - the noise model means incorrectly specifying a transient gene as switch-like has minimal effect).
+
+In this example we can infer the behaviour type from the gene names:
 
 ```{r}
 response_type <- sapply(strsplit(colnames(example_gex), "_"), `[`, 1)
 ```
 
-
 ## Fitting with Ouija
 
-In order to fit the pseudotimes simply call `ouija` passing in the expected response types. Note that if no response types are provided then they are all assumed to be switch-like by default:
+In order to fit the pseudotimes simply call `ouija` passing in the expected response types. Note that if no response types are provided then they are all assumed to be switch-like by default. The input to Ouija is either a cell-by-gene matrix of non-negative expression values, or an `ExpressionSet` that has similar values in `exprs(eset)`.
 
-```{r ouija-fit}
-oui <- ouija(example_gex, response_type, iter = 1000)
-print(oui)
+```{r ouija-fit, results = 'hide', message = FALSE, error = FALSE}
+# oui <- ouija(example_gex, response_type, iter = 10)
 ```
+
+```{r}
+#print(oui)
+```
+
 
 It's good practice to look at the trace and aurocorrelation of the (log)-likelihood to make sure the distribution has (roughly) converged. More advanced diagnostics may be accessed through the `rstan` package applied to `oui$fit`.
 
@@ -104,16 +109,37 @@ ggplot(gene_regs, aes(y = label, x = mean_difference, color = signif)) +
 ## Identifying metastable states
 
 ```{r}
-plot_confusion(oui)
+plot_consistency(oui)
 ```
 
 ```{r}
-cmo <- confu
+cmo <- consistency_matrix(oui)
+cell_classifications <- cluster_consistency(cmo)
+```
+
+```{r}
+map_pst <- map_pseudotime(oui)
+df_class <- data.frame(map_pst, cell_classifications)
+ggplot(df_class, aes(x = map_pst, y = cell_classifications)) +
+  geom_point() +
+  xlab("MAP pseudotime") +
+  ylab("Cell classification")
+```
+
+Alternatively
+
+```{r}
+ggplot(df_class, aes(x = map_pst, fill = factor(cell_classifications))) +
+  geom_density() +
+  theme(legend.position = 'top') +
+  scale_fill_discrete(name = "Cell classification") +
+  xlab("MAP pseudotime")
 ```
 
 
-
 # Advanced usage
+
+## Providing prior information on gene behaviour
 
 ## Manipulating the STAN fit
 
@@ -128,19 +154,11 @@ In general, HMC will provide more accurate inference with approximately correct 
 
 These inference types may be invoked using the `inference_type` argument:
 
-```{r inference-type, results = "hide"}
-oui_vb <- ouija(synth_gex, strengths = 5 * c(1, -1, 1, -1, -1, -1), 
+```{r inference-type, eval = FALSE}
+oui_vb <- ouija(synth_gex, response_types,
                 inference_type = "vb")
-
 ```
 
-and we can examine the concordance with the HMC result:
-
-```{r compare_hmc, fig.width = 4, fig.height = 3}
-ggplot(data.frame(hmc = map_pseudotime(oui), vb = map_pseudotime(oui_vb)),
-       aes(x = hmc, y = vb)) +
-  geom_point() + xlab("HMC pseudotime") + ylab("Variational Bayes pseudotime")
-```
 
 
 # Technical info

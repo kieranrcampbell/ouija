@@ -1,6 +1,10 @@
 
 
-#' Extract the MAP pseudotime estimates from a \code{ouija_fit}
+#' Extract the MAP estimates from a \code{ouija_fit}
+#' 
+#' Extract the MAP (maximum a posteriori, aka posterior mode) 
+#' estimates of the pseudotimes, switch times, peak times
+#' or switch strengths from a \code{ouija_fit}.
 #'
 #' @param oui An object of class \code{ouija_fit}.
 #' 
@@ -9,17 +13,46 @@
 #' @importFrom coda mcmc
 #' 
 #' @export
-#' @name map_pseudotime
+#' @name map
+#' @importFrom methods is
 #' 
-#' @return MAP pseudotime vector of length N
+#' @return MAP estimates of the specified quantity.
 #' 
 #' @examples 
 #' data(oui)
 #' tmap <- map_pseudotime(oui)
+#' t0map <- switch_times(oui)
+#' pmap <- peak_times(oui)
+#' kmap <- switch_strengths(oui)
 map_pseudotime <- function(oui) {
   stopifnot(is(oui, "ouija_fit"))
   posterior.mode(mcmc(extract(oui$fit, "t")$t))
 }
+
+#' @name map
+#' @export
+switch_times <- function(oui) {
+  stopifnot(is(oui, "ouija_fit"))
+  if(!any(oui$response_type == "switch")) return(NULL)
+  posterior.mode(mcmc(extract(oui$fit, "t0")$t0))
+}
+
+#' @name map
+#' @export
+peak_times <- function(oui) {
+  stopifnot(is(oui, "ouija_fit"))
+  if(!any(oui$response_type == "transient")) return(NULL)
+  posterior.mode(mcmc(extract(oui$fit, "p")$p))
+}
+
+#' @name map
+#' @export
+switch_strengths <- function(oui) {
+  stopifnot(is(oui, "ouija_fit"))
+  if(!any(oui$response_type == "switch")) return(NULL)
+  posterior.mode(mcmc(extract(oui$fit, "k")$k))
+}
+
 
 #' Pseudotime errors
 #' 
@@ -30,7 +63,6 @@ map_pseudotime <- function(oui) {
 #' @name pseudotime_error
 #' 
 #' @importFrom rstan extract
-#' @importFrom coda HPDinterval
 #' @importFrom coda mcmc
 #' @export
 #' 
@@ -43,14 +75,15 @@ map_pseudotime <- function(oui) {
 #' pst_err <- pseudotime_error(oui)
 pseudotime_error <- function(oui, prob = 0.95) {
   t_trace <- extract(oui$fit, "t")$t
-  hpd <- HPDinterval(mcmc(t_trace), prob = prob)
+  hpd <- coda::HPDinterval(mcmc(t_trace), prob = prob)
   return( hpd )
 }
 
 
-#' Predicted expression
+#' Predicted expression (mean and sampling)
 #' 
-#' The predicted (ie mean) expression from the fit.
+#' Extract the posterior mean of the predicted expression (ie the sigmoid
+#' or transient function), or a sample from the posterior.
 #' 
 #' @param oui An object of class \code{ouija_fit}.
 #' 
@@ -59,13 +92,14 @@ pseudotime_error <- function(oui, prob = 0.95) {
 #' @importFrom coda mcmc
 #' 
 #' @return A matrix of the same dimension as \code{oui$Y} containing 
-#' the predicted expression.
+#' the MAP mean expression or a posterior sample of the mean expression.
 #' 
 #' @export
-#' @name rexprs
+#' @name predexprs
 #' @examples 
 #' data(oui)
-#' pexp <- rexprs(oui)
+#' pexp <- predicted_expression(oui)
+#' sample_pexp <- sample_predicted_expression(oui)
 predicted_expression <- function(oui) {
   stopifnot(is(oui, "ouija_fit"))
   # Switch parameters
@@ -95,7 +129,7 @@ predicted_expression <- function(oui) {
   return(pred_expr)
 }
 
-#' Sample predicted expression
+#' @name predexprs
 #' @export
 sample_predicted_expression <- function(oui) {
   extr <- extract(oui$fit, pars = c("mu0_switch", "k", "t0"))
@@ -131,8 +165,8 @@ print.ouija_fit <- function(x, ...) {
   if(x$inference_type == "hmc") {
     msg <- paste(msg, "\nMCMC info:", x$iter, "iterations on", x$chains, "chains")
   }
-  n_switch <- sum(response_type == "switch")
-  n_transient <- sum(response_type == "transient")
+  n_switch <- sum(x$response_type == "switch")
+  n_transient <- sum(x$response_type == "transient")
   msg <- paste(msg, "\n(Gene behaviour) Switch/transient:",n_switch, "/", n_transient)
   cat(msg)
 }
@@ -151,21 +185,46 @@ print.ouija_fit <- function(x, ...) {
 #' 
 #' @keywords internal
 #'
-#' @export
-#' 
-#' @examples 
-#' tsigmoid(1, 1, 0.5, runif(10))
 tsigmoid <- function(mu0, k, t0, t) {
   return( 2 * mu0 / (1 + exp(-k*(t - t0))))
 }
 
+
+#' Generic function to model transient expression whenever needed
+#' 
+#' @param mu0 Half peak expression
+#' @param p Peak time
+#' @param b Peak length
+#' @param t Pseudotime
+#' 
+#' @keywords internal
 transient <- function(mu0, p, b, t) {
   return( 2 * mu0 * exp(-10 * b * (t - p)^2) )
 }
 
-#' Create a consistency matrix
+#' Create, order, and plot a consistency matrix
+#' 
+#' The consistency matrix is the N-by-N (for N cells) matrix where the entry in the
+#' i-th row and j-th column describes the empirical probability that cell i is ordered
+#' after cell j. These functions allow the calculation, ordering (by posterior pseudotime)
+#' and plotting of the consistency matrix. See \code{cluster_consistency} to cluster
+#' the cells using Gaussian Mixture Modelling.
+#' 
+#' The consistency matrix is useful for clustering the pseudotime trajectory into discrete
+#' stages, as if there are regions where the empirical ordering probability is around 0.5
+#' then there is large uncertainty as to the ordering, implying the cells are of roughly
+#' the same type. If the probability is closer to 0 or 1 then there is less uncertainty
+#' and the cells are probably undergoing a smooth transition.
+#' 
+#' @param oui A \code{ouija_fit} object
+#' @seealso cluster_consistency
+#' 
+#' @name consistency
 #' @export
+#' @examples 
+#' cmat <- consistency_matrix(oui)
 consistency_matrix <- function(oui) {
+  stopifnot(is(oui, "ouija_fit"))
   N <- oui$N
   pst_traces <- extract(oui$fit, "t")$t  
   consistency_mat <- matrix(NA, nrow = N, ncol = N)
@@ -178,8 +237,11 @@ consistency_matrix <- function(oui) {
   return(consistency_mat)
 }
 
-#' Order consistency matrix by pseudotime
+#' @param cmat A pre-computed consistency matrix returned by \code{consistency_matrix(oui)}
+#' @name consistency
 #' @export
+#' @examples
+#' cmo <- consistency_matrix_ordered(oui, cmat)
 consistency_matrix_ordered <- function(oui, cmat = NULL) {
   if(is.null(cmat)) cmat <- consistency_matrix(oui)
   pst_order <- order(map_pseudotime(oui))
@@ -188,9 +250,22 @@ consistency_matrix_ordered <- function(oui, cmat = NULL) {
 }
 
 #' Cluster the consistency matrix
+#' 
+#' Clusters the consistency matrix, using Gaussian Mixture Modelling
+#' on its first principal component. The number of clusters is chosen
+#' such that the BIC is maximise
+#' 
+#' @param cmat A consistency matrix returned by \code{consistency_matrix}
+#' @param n_clusters The number of clusters for which to calculate the BIC
+#' 
 #' @import mclust
 #' @import dplyr
 #' @export
+#' @seealso consistency_matrix
+#' @examples 
+#' data(oui)
+#' cmat <- consistency_matrix(oui)
+#' clusters <- cluster_consistency(cmat)
 cluster_consistency <- function(cmat, n_clusters = 2:9) {
   diag(cmat) <- 0
   pca <- prcomp(cmat)
@@ -204,6 +279,7 @@ cluster_consistency <- function(cmat, n_clusters = 2:9) {
 #' @import dplyr
 #' @keywords internal
 regulation_df <- function(oui) {
+  y_index <- . <- NULL
   response_type <- oui$response_type
   G_switch <- sum(response_type == "switch")
   G_transient <- sum(response_type == "transient")
@@ -253,10 +329,11 @@ regulation_df <- function(oui) {
 #' Get significant regulation differences
 #' @export
 #' @importFrom coda mcmc
-#' @importFrom coda HPDInterval
 gene_regulation <- function(oui) {
+  label <- param_diffs <- NULL
+  
   reg_df <- regulation_df(oui)
-  get_95 <- function(v, i) HPDinterval(mcmc(v))[1,i]
+  get_95 <- function(v, i) coda::HPDinterval(mcmc(v))[1,i]
   reg_df <- reg_df %>% 
     group_by(label) %>% 
     dplyr::summarise(mean_difference = mean(param_diffs),

@@ -22,7 +22,6 @@ Imports:
   coda,
   cowplot,
   viridis, 
-  tidyr,
   mclust
 Suggests: 
   Biobase,

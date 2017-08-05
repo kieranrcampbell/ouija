@@ -15,22 +15,21 @@
 #' @param x Either an \code{SCESet} from \code{scater} or a
 #' cell-by-gene (N by G) matrix of non-negative values representing gene expression.
 #' log2(TPM + 1) is recommended.
-#' @param strengths G mean activation strength parameters
-#' @param times G mean activation time parameters
-#' @param strength_sd Optional standard deviations for k parameters
-#' @param time_sd Optional standard deviations for t0 parameters
-#' @param warn_lp Ouija can perform a crude check of convergence in cases where may
-#' models are being fit and manual inspection may be cumbersome. The log-likelihood after
-#' the burn period is regressed off the iteration number, and if the gradient of the fit
-#' falls above a threshold (set by \code{lp_gradient_threshold}) then the user is warned.
-#' @param lp_gradient_threshold The threshold for convergence warning. If the slope of regressing
-#' the log-probability of the model against the iteration number falls above this value then
-#' the user is warned.
-#' @param ... Additional arguments to \code{rstan::sampling}
+#' @param switch_strengths Prior means of switch strengths
+#' @param switch_times Prior means of switch times
+#' @param switch_strength_sd Prior standard deviations of switch strengths
+#' @param switch_time_sd Prior standard deviations of switch times
+#' @param peak_times Prior means of peak times
+#' @param peak_lengths Prior means of peak lengths
+#' @param peak_time_sd Prior standard deviations of peak times
+#' @param peak_length_sd Prior standard deviations of peak lengths
+#' @param ... Additional arguments to \code{rstan::sampling} or \code{rstan::vb}
 #' @param student_df Degrees of freedom for the student's t likelihood
 #' @param inference_type The type of inference to be performed, either \code{hmc} for Hamiltonian
 #' Monte Carlo or \code{vb} for ADVI (Variational Bayes). Note that HMC is typically more accurate
 #' but VB will be orders of magnitude faster.
+#' @param response_type A vector declaring whether each gene exhibits "switch" or "transient"
+#' expression. Defaults to "switch" for all genes
 #' 
 #' @param normalise_expression Logical, default TRUE. If TRUE the data is pre-normalised
 #' so the average peak expression is approximately 1. This makes the strength parameters
@@ -38,6 +37,7 @@
 #' 
 #' @import rstan
 #' @importFrom Rcpp loadModule
+#' @importFrom stats coef lm prcomp
 #' 
 #' @export
 #' 
@@ -46,15 +46,13 @@
 #' @examples 
 #' data(example_gex)
 #' response_types <- c(rep("switch", 9), rep("transient", 2))
-#' oui <- ouija(example_gex, response_types = response_types, iter = 100)
+#' # oui <- ouija(example_gex, response_type = response_types, iter = 100)
 ouija <- function(x, 
                   response_type = "switch",
-                  strengths = NULL, times = NULL,
-                  strength_sd = NULL, time_sd = NULL,
-                  peak_times = NULL, bandwidths = NULL,
-                  peak_sd = NULL, bandwidth_sd = NULL,
-                  warn_lp = TRUE,
-                  lp_gradient_threshold = 1e-2,
+                  switch_strengths = NULL, switch_times = NULL,
+                  switch_strength_sd = NULL, switch_time_sd = NULL,
+                  peak_times = NULL, peak_lengths = NULL,
+                  peak_time_sd = NULL, peak_length_sd = NULL,
                   student_df = 10,
                   inference_type = c("hmc", "vb"),
                   normalise_expression = TRUE,
@@ -107,33 +105,33 @@ ouija <- function(x,
   Y_transient <- Y[,is_transient]
   
   # we can fill in some values if they're null
-  if(is.null(strengths)) strengths = rep(0, G_switch)
-  if(is.null(strength_sd)) strength_sd <- rep(5, G_switch)
-  if(is.null(times)) times <- rep(0.5, G_switch) ## change if constrained
-  if(is.null(time_sd)) time_sd <- rep(1, G_switch)
+  if(is.null(switch_strengths)) switch_strengths = rep(0, G_switch)
+  if(is.null(switch_strength_sd)) switch_strength_sd <- rep(5, G_switch)
+  if(is.null(switch_times)) switch_times <- rep(0.5, G_switch) ## change if constrained
+  if(is.null(switch_time_sd)) switch_time_sd <- rep(1, G_switch)
   
   if(is.null(peak_times)) peak_times <- rep(0.5, G_transient)
-  if(is.null(peak_sd)) peak_sd <- rep(0.1, G_transient)
-  if(is.null(bandwidths)) bandwidths <- rep(50, G_transient)
-  if(is.null(bandwidth_sd)) bandwidth_sd <- rep(10, G_transient)
+  if(is.null(peak_time_sd)) peak_time_sd <- rep(0.1, G_transient)
+  if(is.null(peak_lengths)) peak_lengths <- rep(50, G_transient)
+  if(is.null(peak_length_sd)) peak_length_sd <- rep(10, G_transient)
 
-  stopifnot(length(strengths) == G_switch)
-  stopifnot(length(strength_sd) == G_switch)
-  stopifnot(length(times) == G_switch)
-  stopifnot(length(time_sd) == G_switch)
+  stopifnot(length(switch_strengths) == G_switch)
+  stopifnot(length(switch_strength_sd) == G_switch)
+  stopifnot(length(switch_times) == G_switch)
+  stopifnot(length(switch_time_sd) == G_switch)
   
   stopifnot(length(peak_times) == G_transient)
-  stopifnot(length(peak_sd) == G_transient)
-  stopifnot(length(bandwidths) == G_transient)
-  stopifnot(length(bandwidth_sd) == G_transient)
+  stopifnot(length(peak_time_sd) == G_transient)
+  stopifnot(length(peak_lengths) == G_transient)
+  stopifnot(length(peak_length_sd) == G_transient)
 
   ## stan setup
   data <- list(Y_switch = t(Y_switch), Y_transient = t(Y_transient),
                G_switch = G_switch, G_transient = G_transient, G = G, N = N,
-               k_means = strengths, k_sd = strength_sd,
-               t0_means = times, t0_sd = time_sd,
-               p_means = peak_times, p_sd = peak_sd,
-               b_means = bandwidths, b_sd = bandwidth_sd,
+               k_means = switch_strengths, k_sd = switch_strength_sd,
+               t0_means = switch_times, t0_sd = switch_time_sd,
+               p_means = peak_times, p_sd = peak_time_sd,
+               b_means = peak_lengths, b_sd = peak_length_sd,
                student_df = student_df)
   
   
@@ -172,7 +170,6 @@ ouija <- function(x,
   }
   stanargs$object <- model
   stanargs$data <- data
-  
 
   
   ## call inference
@@ -182,25 +179,15 @@ ouija <- function(x,
   } else {
     fit <- do.call(vb, stanargs)
   }
-  
-  
-  ## Do a really dumb automated check of convergence:
-  # if(warn_lp && inference_type == "hmc") {
-  #   lp <- extract(fit, pars = "lp__")$lp__
-  #   siter <- seq_along(lp)
-  #   lplm <- lm(lp ~ siter)
-  #   if(coef(lplm)[2] > lp_gradient_threshold) {
-  #     warning(paste("Gradient of log-probability against iteration greater than threshold: "), coef(lplm)[2])
-  #     warning("Model may not be converged")
-  #   }
-  # }
-    
+
   oui <- structure(list(fit = fit, G = G, N = N, Y = Y,
                         inference_type = inference_type,
                         iter = stanargs$iter, chains = stanargs$chains,
                         thin = stanargs$thin,
-                        strengths = strengths, strength_sd = strength_sd,
-                        times = times, time_sd = time_sd,
+                        strengths = switch_strengths, switch_strength_sd = switch_strength_sd,
+                        switch_times = switch_times, switch_time_sd = switch_time_sd,
+                        peak_times = peak_times, peak_time_sd = peak_time_sd,
+                        peak_lengths = peak_lengths, peak_length_sd = peak_length_sd,
                         normalise_expression = normalise_expression,
                         norm_factors = norm_factors,
                         response_type = response_type), 
