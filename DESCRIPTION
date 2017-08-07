@@ -26,6 +26,7 @@ Suggests:
   Biobase,
   rmarkdown,
   knitr,
+  BiocStyle,
   testthat
 biocViews: Software, Transcriptomics, GeneExpression, RNASeq,
         SingleCell, Bayesian, PrincipalComponent
