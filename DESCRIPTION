@@ -24,6 +24,7 @@ Imports:
   mclust
 Suggests: 
   Biobase,
+  rmarkdown,
   knitr,
   testthat
 biocViews: Software, Transcriptomics, GeneExpression, RNASeq,
