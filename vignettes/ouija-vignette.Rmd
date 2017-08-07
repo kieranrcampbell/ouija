@@ -11,6 +11,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 library(ggplot2)
+library(ouija)
 theme_set(theme_bw())
 
 set.seed(1L)
@@ -36,7 +37,6 @@ Under the hood, Ouija uses Bayesian non-linear factor analysis with priors on th
 Here we can use some synthetic data bundled with the package. This contains a gene expression matrix `example_gex` comprising 11 genes and 400 cells, of which the first 9 are switch-like and the final 2 are transient
 
 ```{r load-synth-data}
-devtools::load_all("~/oxford/bnlfa/oui/ouija")
 data(example_gex)
 
 example_gex[1:3, ]
