@@ -337,6 +337,7 @@ regulation_df <- function(oui) {
 
 #' Differences in regulation timing
 #' 
+#' 
 #' Computes a data frame with a row for every pairwise comparison
 #' between genes, with a column for the posterior mean difference 
 #' in regulation timings, along with the lower and upper 95% 
