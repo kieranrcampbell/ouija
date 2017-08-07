@@ -24,6 +24,11 @@ consistency_matrix_ordered(oui, cmat = NULL)
 
 \item{cmat}{A pre-computed consistency matrix returned by \code{consistency_matrix(oui)}}
 }
+\value{
+A cell-by-cell consistency matrix (ordered by posterior pseudotime
+if \code{consistency_matrix_ordered}), or a \code{ggplot2} plot object
+displaying the ordered consistency matrix (if \code{plot_consistency_matrix})
+}
 \description{
 The consistency matrix is the N-by-N (for N cells) matrix where the entry in the
 i-th row and j-th column describes the empirical probability that cell i is ordered
@@ -42,6 +47,7 @@ and the cells are probably undergoing a smooth transition.
 data(oui)
 plot_consistency(oui)
 cmat <- consistency_matrix(oui)
+
 cmo <- consistency_matrix_ordered(oui, cmat)
 }
 \seealso{

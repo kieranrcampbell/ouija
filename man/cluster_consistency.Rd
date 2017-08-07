@@ -11,6 +11,9 @@ cluster_consistency(cmat, n_clusters = 2:9)
 
 \item{n_clusters}{The number of clusters for which to calculate the BIC}
 }
+\value{
+A numeric vector indicating to which cluster each cell has been assigned
+}
 \description{
 Clusters the consistency matrix, using Gaussian Mixture Modelling
 on its first principal component. The number of clusters is chosen
@@ -20,6 +23,7 @@ such that the BIC is maximise
 data(oui)
 cmat <- consistency_matrix(oui)
 clusters <- cluster_consistency(cmat)
+
 }
 \seealso{
 consistency_matrix

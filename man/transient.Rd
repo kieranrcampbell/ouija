@@ -15,6 +15,9 @@ transient(mu0, p, b, t)
 
 \item{t}{Pseudotime}
 }
+\value{
+The transient (rbf) function evaluated at input coordinates
+}
 \description{
 Generic function to model transient expression whenever needed
 }

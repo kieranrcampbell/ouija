@@ -12,8 +12,7 @@ License: GPL (>=3)
 Depends: R (>= 3.4.0), Rcpp (>= 0.12.0)
 Imports: 
   rstan (>= 2.9.0), 
-  ggplot2, 
-  reshape2,
+  ggplot2,
   tidyr,
   dplyr, 
   methods, 
@@ -28,7 +27,7 @@ Suggests:
   knitr,
   testthat
 biocViews: Software, Transcriptomics, GeneExpression, RNASeq,
-        SingleCell, Bayesian
+        SingleCell, Bayesian, PrincipalComponent
 NeedsCompilation: yes
 RoxygenNote: 6.0.1
 VignetteBuilder: knitr

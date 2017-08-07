@@ -15,7 +15,7 @@ theme_set(theme_bw())
 
 set.seed(1L)
 
-knitr::opts_chunk$set(echo = TRUE, cache = TRUE, 
+knitr::opts_chunk$set(echo = TRUE, cache = FALSE, 
                       message = FALSE, warning = FALSE,
                       fig.center = TRUE, fig.width = 6, fig.height = 4)
 ```
@@ -57,11 +57,11 @@ response_type <- sapply(strsplit(colnames(example_gex), "_"), `[`, 1)
 In order to fit the pseudotimes simply call `ouija` passing in the expected response types. Note that if no response types are provided then they are all assumed to be switch-like by default. The input to Ouija is either a cell-by-gene matrix of non-negative expression values, or an `ExpressionSet` that has similar values in `exprs(eset)`.
 
 ```{r ouija-fit, results = 'hide', message = FALSE, error = FALSE}
-# oui <- ouija(example_gex, response_type, iter = 10)
+oui <- ouija(example_gex, response_type, iter = 1000)
 ```
 
 ```{r}
-#print(oui)
+print(oui)
 ```
 
 

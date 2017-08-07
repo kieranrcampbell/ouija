@@ -135,6 +135,9 @@ plot_peak_times <- function(oui) {
 #' \dontrun{
 #' plot_peak_times(oui)
 #' }
+#' 
+#' @return 
+#' A \code{ggplot2} object plotting the expression, switch times, or peak times
 plot_expression <- function(oui, ncol = 2, nrow = NULL) {
   gene <- ouija_pseudotime <- NULL
   

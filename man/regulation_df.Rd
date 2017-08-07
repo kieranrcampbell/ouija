@@ -6,6 +6,10 @@
 \usage{
 regulation_df(oui)
 }
+\value{
+A \code{data.frame} containing the posterior traces
+for all pairwise differences in regulation timing
+}
 \description{
 Get regulation df
 }

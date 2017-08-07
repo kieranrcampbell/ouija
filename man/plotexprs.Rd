@@ -22,6 +22,9 @@ plot_expression(oui, ncol = 2, nrow = NULL)
 
 \item{nrow}{The number of rows for the expression plot}
 }
+\value{
+A \code{ggplot2} object plotting the expression, switch times, or peak times
+}
 \description{
 Plot the expression along pseudotime with the maximum a posteriori (MAP)
 mean function as fitted by Ouija, or the MAP estimates of the
@@ -34,4 +37,5 @@ plot_switch_times(oui)
 \dontrun{
 plot_peak_times(oui)
 }
+
 }

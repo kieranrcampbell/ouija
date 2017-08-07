@@ -198,6 +198,7 @@ tsigmoid <- function(mu0, k, t0, t) {
 #' @param t Pseudotime
 #' 
 #' @keywords internal
+#' @return The transient (rbf) function evaluated at input coordinates
 transient <- function(mu0, p, b, t) {
   return( 2 * mu0 * exp(-10 * b * (t - p)^2) )
 }
@@ -223,6 +224,10 @@ transient <- function(mu0, p, b, t) {
 #' @export
 #' @examples 
 #' cmat <- consistency_matrix(oui)
+#' 
+#' @return A cell-by-cell consistency matrix (ordered by posterior pseudotime
+#' if \code{consistency_matrix_ordered}), or a \code{ggplot2} plot object
+#' displaying the ordered consistency matrix (if \code{plot_consistency_matrix})
 consistency_matrix <- function(oui) {
   stopifnot(is(oui, "ouija_fit"))
   N <- oui$N
@@ -266,6 +271,8 @@ consistency_matrix_ordered <- function(oui, cmat = NULL) {
 #' data(oui)
 #' cmat <- consistency_matrix(oui)
 #' clusters <- cluster_consistency(cmat)
+#' 
+#' @return A numeric vector indicating to which cluster each cell has been assigned
 cluster_consistency <- function(cmat, n_clusters = 2:9) {
   diag(cmat) <- 0
   pca <- prcomp(cmat)
@@ -278,6 +285,8 @@ cluster_consistency <- function(cmat, n_clusters = 2:9) {
 #' @importFrom rstan extract
 #' @import dplyr
 #' @keywords internal
+#' @return A \code{data.frame} containing the posterior traces
+#' for all pairwise differences in regulation timing
 regulation_df <- function(oui) {
   y_index <- . <- NULL
   response_type <- oui$response_type
@@ -326,9 +335,24 @@ regulation_df <- function(oui) {
 }
 
 
-#' Get significant regulation differences
+#' Differences in regulation timing
+#' 
+#' Computes a data frame with a row for every pairwise comparison
+#' between genes, with a column for the posterior mean difference 
+#' in regulation timings, along with the lower and upper 95% 
+#' highest posterior density credible intervals, and a logical
+#' indicating whether the differences in regulation timings
+#' are significant.
+#' 
+#' @param oui An object of type \code{ouija_fit}
+#' @name genereg
 #' @export
 #' @importFrom coda mcmc
+#' @examples 
+#' data(oui)
+#' genereg <- gene_regulation(oui)
+#' 
+#' @return A \code{data.frame} as described above
 gene_regulation <- function(oui) {
   label <- param_diffs <- NULL
   
