@@ -185,6 +185,14 @@ ggplot(df_class, aes(x = map_pst, fill = factor(cell_classifications))) +
 
 ## Incorporating prior information on gene behaviour
 
+Because Ouija uses a parametric model of gene expression with interpretable parameters under a Bayesian framework we can encode prior beliefs or information as informative Bayesian priors. For example, the switch time parameter $t_0$ tells us where in the trajectory a gene is up or down regulated, with 0 being the beginning of the trajectory and 1 the end. By default, a weak prior is placed on $t0$ with a mean at 0.5. However, a researcher may know a given gene is downregulated early in the (differentiation) trajectory. In such case we may wish to place an informative prior, such as a prior mean of 0.1 indicating downregulation happens early.
+
+In general the parameters we may reasonably wish to place prior information on are the switch strengths, switch times, and peak times. In each case the parameter has a Gaussian prior distribution with 
+
+$$ \theta \sim \mathcal{N}(\mu, \sigma) $$
+
+where $\mu$ tells us where 
+
 ## Accessing the STAN fit
 
 ## Inference types

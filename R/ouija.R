@@ -132,7 +132,7 @@ ouija <- function(x,
   
   
   stanfile <- system.file(model_file, package = "ouija")
-  model <- stan_model(stanfile, save_dso = FALSE, verbose = TRUE)
+  model <- stan_model(stanfile, save_dso = TRUE, verbose = FALSE)
   
   ## manipulate stan defaults
   stanargs <- list(...)
