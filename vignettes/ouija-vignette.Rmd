@@ -1,7 +1,7 @@
 ---
 title: "Ouija: Interpretable marker-based single-cell pseudotime using Bayesian parametric models"
 author: "Kieran R Campbell"
-date: "July 2017"
+date: "August 2017"
 output: BiocStyle::html_document
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
@@ -15,7 +15,7 @@ theme_set(theme_bw())
 
 set.seed(1L)
 
-knitr::opts_chunk$set(echo = TRUE, cache = FALSE, 
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE, 
                       message = FALSE, warning = FALSE,
                       fig.center = TRUE, fig.width = 6, fig.height = 4)
 ```
@@ -73,11 +73,15 @@ plot_diagnostics(oui)
 
 ## Examining results
 
-We can plot the gene expression against the MAP pseudotime too:
+Ouija comes with three plotting functions to help understand the fitted pseudotimes.
+
+We can plot the gene expression over pseudotime along with the maximum a posteriori (MAP) estimates of the mean function (the sigmoid or Gaussian transient function) using the `plot_expression` function:
 
 ```{r plot-map-pseudotime}
 plot_expression(oui)
 ```
+
+We can also visualise when in the trajectory gene regulation behaviour occurs, either in the form of the switch time or the peak time (for switch-like or transient genes) using the `plot_switch_times` and `plot_transient_times` functions:
 
 ```{r}
 plot_switch_times(oui)
@@ -91,17 +95,33 @@ plot_peak_times(oui)
 
 ## Determining regulation order of genes
 
+A common analysis is to work out the regulation orderings of genes. For example, is gene A upregulated before gene B? Does gene C peak before the downregulation of gene D? Ouija answers these questions in terms of a Bayesian hypothesis test of whether the difference in regulation timing (either switch time or peak time) is significantly different to 0. This is collated using the `gene_regulation` function:
+
 ```{r}
 gene_regs <- gene_regulation(oui)
 head(gene_regs)
 ```
 
+As can be seen, this returns a `data.frame` with 7 columns:
+
+* `label` The two genes being compared in a string format (handy for plotting)
+* `gene_A` The first gene being compared
+* `gene_B` The second gene being compared
+* `mean_difference` The mean difference in regulation timing across all MCMC traces
+* `lower_95` The lower bound of the 95% credible interval for the difference in regulation timing
+* `upper_95` The corresopnding upper bound
+* `significant` A logical describing whether the difference in regulation timings is significant - true if the posterior credible interval does not overlap 0
+
+We can graph the posterior differences in gene regulation including whether they are significantly different as per our example above:
+
+
 ```{r, fig.height = 10, fig.width = 6}
-ggplot(gene_regs, aes(y = label, x = mean_difference, color = signif)) +
+ggplot(gene_regs, aes(y = label, x = mean_difference, color = significant)) +
   geom_point() +
   geom_errorbarh(aes(xmin = lower_95, xmax = upper_95)) +
   xlab("Mean difference in regulation time") +
   ylab("Gene pair")
+
 ```
 
 
@@ -139,9 +159,9 @@ ggplot(df_class, aes(x = map_pst, fill = factor(cell_classifications))) +
 
 # Advanced usage
 
-## Providing prior information on gene behaviour
+## Incorporating prior information on gene behaviour
 
-## Manipulating the STAN fit
+## Accessing the STAN fit
 
 ## Inference types
 

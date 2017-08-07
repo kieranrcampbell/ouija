@@ -358,15 +358,19 @@ gene_regulation <- function(oui) {
   label <- param_diffs <- NULL
   
   reg_df <- regulation_df(oui)
+  reg_df <- dplyr::select(reg_df, -rtype_i, -rtype_j)
+  
   get_95 <- function(v, i) coda::HPDinterval(mcmc(v))[1,i]
   reg_df <- reg_df %>% 
-    group_by(label) %>% 
+    group_by(label, gene_i, gene_j) %>% 
     dplyr::summarise(mean_difference = mean(param_diffs),
               lower_95 = get_95(param_diffs, 1),
               upper_95 = get_95(param_diffs, 2))
   reg_df <- mutate(reg_df, signif = FALSE)
   reg_df$signif[reg_df$mean_difference < 0 & reg_df$upper_95 < 0] <- TRUE
   reg_df$signif[reg_df$mean_difference > 0 & reg_df$lower_95 > 0] <- TRUE
+  reg_df <- dplyr::rename(reg_df, gene_A = gene_i, gene_B = gene_j, 
+                          significant = signif)
   reg_df
 }
 
