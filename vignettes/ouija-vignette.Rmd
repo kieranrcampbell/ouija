@@ -15,7 +15,7 @@ theme_set(theme_bw())
 
 set.seed(1L)
 
-knitr::opts_chunk$set(echo = TRUE, eval = FALSE, 
+knitr::opts_chunk$set(echo = TRUE, # eval = FALSE, 
                       message = FALSE, warning = FALSE,
                       fig.center = TRUE, fig.width = 6, fig.height = 4)
 ```
@@ -92,6 +92,18 @@ plot_switch_times(oui)
 plot_peak_times(oui)
 ```
 
+## Extracting useful quantities
+
+For downstream analysis it is useful to extract maximum a posteriori estimates of several quantities. These can be accessed through various convenience functions:
+
+```{r}
+tmap <- map_pseudotime(oui) # MAP pseudotimes
+t0map <- switch_times(oui) # MAP switch times
+pmap <- peak_times(oui) # MAP peak times
+kmap <- switch_strengths(oui) # MAP switch strengths
+```
+
+
 
 ## Determining regulation order of genes
 
@@ -121,21 +133,30 @@ ggplot(gene_regs, aes(y = label, x = mean_difference, color = significant)) +
   geom_errorbarh(aes(xmin = lower_95, xmax = upper_95)) +
   xlab("Mean difference in regulation time") +
   ylab("Gene pair")
-
 ```
 
 
 
-## Identifying metastable states
+## Identifying metastable states with consistency matrices
 
-```{r}
-plot_consistency(oui)
-```
+A further common analysis to be performed with Ouija is the identification of "metastable states", or discrete cell types along continuous pseudotemporal trajectories. The basic idea is that as cells differentiate they may be "stable" for part of the trajectory, which counts as a cell type.
+
+To identify these Ouija forms a _consistency matrix_. If there are $N$ cells, the consistency matrix is the $N$ by $N$ matrix where the entry in the $i^{th}$ row and $j^{th}$ column is the empirical probability that cell $i$ is before cell $j$. The intuition is that if there are phases of pseudotime where the consistency matrix is around 0.5 then there is large uncertainty as to whether one cell is ordered before another, meaning all the cells are essentially at the same point in pseudotime defining a cell state. If however the consistency matrix is at 0 or 1, the cells are transitioning along pseudotime with little uncertainty as to their ordering implying a continuous progression.
+
+We can visualise the consistency matrix via a call to `plot_consistency` and calculate it via a call to `consistency_matrix`:
 
 ```{r}
 cmo <- consistency_matrix(oui)
+plot_consistency(oui)
+```
+
+In order to identify the clusters along pseudotime we call `cluster_consistency` on the confusion matrix. This applies Gaussian Mixture Modelling through the `mclust` package to the first principal component of the consistency matrix. The number of clusters chosen is that which maximises the BIC through iterative search, which defaults to `2:9` though this can be changed through the `n_clusters` argument:
+
+```{r}
 cell_classifications <- cluster_consistency(cmo)
 ```
+
+We can visualise this either as a scatter plot or density plot:
 
 ```{r}
 map_pst <- map_pseudotime(oui)
@@ -146,7 +167,7 @@ ggplot(df_class, aes(x = map_pst, y = cell_classifications)) +
   ylab("Cell classification")
 ```
 
-Alternatively
+
 
 ```{r}
 ggplot(df_class, aes(x = map_pst, fill = factor(cell_classifications))) +
