@@ -26,9 +26,16 @@ Suggests:
   BiocStyle,
   testthat,
   SingleCellExperiment,
-  Scater
-biocViews: Software, Transcriptomics, GeneExpression, RNASeq,
-        SingleCell, Bayesian, PrincipalComponent
+  scater
+biocViews: 
+  Software, 
+  Transcriptomics, 
+  GeneExpression, 
+  RNASeq,
+  SingleCell, 
+  Bayesian, 
+  PrincipalComponent, 
+  GeneRegulation
 NeedsCompilation: yes
 RoxygenNote: 6.0.1
 VignetteBuilder: knitr
