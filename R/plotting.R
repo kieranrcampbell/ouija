@@ -20,16 +20,18 @@
 #' plot_diagnostics(oui)
 plot_diagnostics <- function(oui, arrange = c("vertical", "horizontal")) {
   stopifnot(is(oui, "ouija_fit"))
-  
-  if(oui$inference_type == "vb") {
+
+  if (oui$inference_type == "vb") {
     warning("Diagnostic plots only make sense for HMC inference")
   }
-  
+
   arrange <- match.arg(arrange)
   nrow <- switch(arrange,
                  vertical = 2,
                  horizontal = 1)
-  plt <- cowplot::plot_grid(stan_trace(oui$fit, "lp__"), stan_ac(oui$fit, "lp__"), nrow = nrow)
+  plt <- cowplot::plot_grid(stan_trace(oui$fit, "lp__"), 
+                            stan_ac(oui$fit, "lp__"), 
+                            nrow = nrow)
   return(plt)
 }
 

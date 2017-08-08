@@ -25,7 +25,8 @@ Suggests:
   knitr,
   BiocStyle,
   testthat,
-  SingleCellExperiment
+  SingleCellExperiment,
+  scater
 biocViews: 
   Software, 
   Transcriptomics, 

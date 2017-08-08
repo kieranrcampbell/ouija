@@ -1,5 +1,8 @@
 # Ouija
 
+[![Build Status](https://travis-ci.org/kieranrcampbell/ouija.svg?branch=master)](https://travis-ci.org/kieranrcampbell/ouija)
+
+
 Ouija is a probabilistic pseudotime framework. Ouija 
 
 * infers pseudotimes from a **small number of marker genes** letting you understand **why** the pseudotimes have been learned in terms of those genes (**A**)
