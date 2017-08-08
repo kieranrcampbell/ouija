@@ -25,7 +25,8 @@ Suggests:
   knitr,
   BiocStyle,
   testthat,
-  SingleCellExperiment
+  SingleCellExperiment,
+  Scater
 biocViews: Software, Transcriptomics, GeneExpression, RNASeq,
         SingleCell, Bayesian, PrincipalComponent
 NeedsCompilation: yes
