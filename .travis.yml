@@ -5,16 +5,3 @@ r: bioc-devel
 sudo: false
 cache: packages
 
-r_binary_packages:
-  - biobase
-  - biocgenerics
-  - genomicranges
-  - iranges
-  - limma
-  - ggplot2
-  - plyr
-  - stringr
-  - testthat,
-  - reshape2
-  - rsqlite
-  - rcppeigen
