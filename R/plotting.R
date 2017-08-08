@@ -29,8 +29,8 @@ plot_diagnostics <- function(oui, arrange = c("vertical", "horizontal")) {
   nrow <- switch(arrange,
                  vertical = 2,
                  horizontal = 1)
-  plt <- cowplot::plot_grid(stan_trace(oui$fit, "lp__"), 
-                            stan_ac(oui$fit, "lp__"), 
+  plt <- cowplot::plot_grid(stan_trace(oui$fit, "lp__"),
+                            stan_ac(oui$fit, "lp__"),
                             nrow = nrow)
   return(plt)
 }
@@ -44,8 +44,8 @@ plot_diagnostics <- function(oui, arrange = c("vertical", "horizontal")) {
 #' data(oui)
 #' plot_consistency(oui)
 plot_consistency <- function(oui, cmo = NULL, interpolate = FALSE) {
-  x <- value <- y <- gene <- ouija_pseudotime <- NULL
-  if(is.null(cmo)) cmo <- consistency_matrix_ordered(oui)
+  x <- value <- y <- NULL
+  if (is.null(cmo)) cmo <- consistency_matrix_ordered(oui)
   diag(cmo) <- NA
   cmo_df <- as_data_frame(cmo)
   names(cmo_df) <- seq_len(oui$N)
@@ -53,11 +53,12 @@ plot_consistency <- function(oui, cmo = NULL, interpolate = FALSE) {
   cmo_df_tidy <- gather(cmo_df, y, value, -x)
   cmo_df_tidy$y <- as.numeric(cmo_df_tidy$y)
   ggplot(cmo_df_tidy, aes(x = x, y = y, fill = value)) +
-    geom_raster(interpolate = interpolate) + 
+    geom_raster(interpolate = interpolate) +
     viridis::scale_fill_viridis(name = "P(i>j)") +
-    xlab(sprintf("Pseudotime order \u2192")) + ylab(sprintf("Pseudotime order \u2192")) +
-    scale_x_continuous(expand = c(0,0)) +
-    scale_y_continuous(expand = c(0,0)) +
+    xlab(sprintf("Pseudotime order \u2192")) +
+    ylab(sprintf("Pseudotime order \u2192")) +
+    scale_x_continuous(expand = c(0, 0)) +
+    scale_y_continuous(expand = c(0, 0)) +
     theme(panel.background = element_blank())
 }
 
@@ -74,15 +75,17 @@ plot_switch_times <- function(oui) {
   t0 <- extract(oui$fit, "t0")$t0
   t0_means <- colMeans(t0)
   t0_interval <- coda::HPDinterval(mcmc(t0))
-  t0_df <- data_frame(t0_mean = t0_means, lower = t0_interval[,1], upper = t0_interval[,2],
+  t0_df <- data_frame(t0_mean = t0_means,
+                      lower = t0_interval[, 1],
+                      upper = t0_interval[, 2],
                       kmean = kmean)
   t0_df$Gene <- colnames(oui$Y[, oui$response_type == "switch"])
   t0_df$Gene <- factor(t0_df$Gene, t0_df$Gene[order(t0_means)])
   ggplot(t0_df, aes(x = Gene, y = t0_mean, fill = kmean)) +
-    geom_errorbar(aes(ymin = lower, ymax = upper), color = "grey60", 
+    geom_errorbar(aes(ymin = lower, ymax = upper), color = "grey60",
                   width = 0.5, alpha = 0.5) +
     coord_flip() +
-    geom_point(color = 'grey50', shape = 21, size = 3) +
+    geom_point(color = "grey50", shape = 21, size = 3) +
     ylab("Switch point") +
     scale_fill_gradient2(name = "Regulation", low = vpal[1], high = vpal[5]) +
     scale_color_gradient2(name = "Regulation", low = vpal[1], high = vpal[5]) +
@@ -92,26 +95,28 @@ plot_switch_times <- function(oui) {
 #' @name plotexprs
 #' @export
 plot_peak_times <- function(oui) {
-  if(sum(oui$response_type == "transient") == 0) {
+  if (sum(oui$response_type == "transient") == 0) {
     stop("Fit must contain transient genes to plot peak times")
   }
   Gene <- p_mean <- lower <- upper <- NULL
-  
+
   p_trace <- extract(oui$fit, "p")$p
   p_means <- colMeans(p_trace)
   p_interval <- coda::HPDinterval(mcmc(p_trace))
-  p_df <- data_frame(p_mean = p_means, lower = p_interval[,1], upper = p_interval[,2])
-  
+  p_df <- data_frame(p_mean = p_means,
+                     lower = p_interval[, 1],
+                     upper = p_interval[, 2])
+
   p_df$Gene <- colnames(oui$Y[, oui$response_type == "transient"])
   p_df$Gene <- factor(p_df$Gene, p_df$Gene[order(p_means)])
   ggplot(p_df, aes(x = Gene, y = p_mean)) +
-    geom_errorbar(aes(ymin = lower, ymax = upper), color = "grey60", 
+    geom_errorbar(aes(ymin = lower, ymax = upper), color = "grey60",
                   width = 0.5, alpha = 0.5) +
     coord_flip() +
-    geom_point(color = 'grey50', shape = 21, size = 3, fill = 'grey10') +
+    geom_point(color = "grey50", shape = 21, size = 3, fill = "grey10") +
     ylab("Peak time") +
     theme(legend.position = "top") +
-    ylim(c(0,1))
+    ylim(c(0, 1))
 }
 
 #' Plot fitted expression, switch times, and peak times
@@ -142,37 +147,28 @@ plot_peak_times <- function(oui) {
 #' A \code{ggplot2} object plotting the expression, switch times, or peak times
 plot_expression <- function(oui, ncol = 2, nrow = NULL) {
   gene <- ouija_pseudotime <- NULL
-  
-  expr_df <- as_data_frame(oui$Y) %>% 
-    mutate(ouija_pseudotime = map_pseudotime(oui)) %>% 
+
+  expr_df <- as_data_frame(oui$Y) %>%
+    mutate(ouija_pseudotime = map_pseudotime(oui)) %>%
     gather(gene, expression, -ouija_pseudotime)
-  
-  
-  mu_df <- as_data_frame(predicted_expression(oui)) %>% 
-    mutate(ouija_pseudotime = map_pseudotime(oui)) %>% 
-    gather(gene, expression, -ouija_pseudotime) %>% 
+
+
+  mu_df <- as_data_frame(predicted_expression(oui)) %>%
+    mutate(ouija_pseudotime = map_pseudotime(oui)) %>%
+    gather(gene, expression, -ouija_pseudotime) %>%
     arrange(ouija_pseudotime)
-  
-  
+
+
   ggplot(expr_df, aes(x = ouija_pseudotime)) +
-    geom_point(aes(y = expression), alpha = 0.65, color = 'grey30') + 
-    facet_wrap(~ gene, ncol = ncol, nrow = nrow, 
-               strip.position = 'right') +
+    geom_point(aes(y = expression), alpha = 0.65, color = "grey30") +
+    facet_wrap(~ gene, ncol = ncol, nrow = nrow,
+               strip.position = "right") +
     geom_line(data = mu_df, aes(y = expression), size = 1.2, alpha = 0.7,
-              color = 'red') +
+              color = "red") +
     scale_color_brewer(palette = "Set2", name = "Cell type") +
     theme(legend.position = "top",
-          strip.background = element_rect(fill="white")) +
+          strip.background = element_rect(fill = "white")) +
     ylab("Normalised log expression") +
     xlab("Ouija pseudotime") +
-    scale_y_continuous(breaks = c(0, 0.5, 1, 1.5)) 
-  
+    scale_y_continuous(breaks = c(0, 0.5, 1, 1.5))
 }
-
-
-# plot_regulations <- function(reg_df) {
-#    ggplot(reg_df, aes(x = param_diffs)) +
-#      geom_histogram() + facet_wrap(~ label) +
-#      labs(x = "Difference in switch times", 
-#           subtitle = "Posterior difference in regulation time")
-# }

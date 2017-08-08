@@ -33,7 +33,7 @@ map_pseudotime <- function(oui) {
 #' @export
 switch_times <- function(oui) {
   stopifnot(is(oui, "ouija_fit"))
-  if(!any(oui$response_type == "switch")) return(NULL)
+  if (!any(oui$response_type == "switch")) return(NULL)
   posterior.mode(mcmc(extract(oui$fit, "t0")$t0))
 }
 
@@ -41,7 +41,7 @@ switch_times <- function(oui) {
 #' @export
 peak_times <- function(oui) {
   stopifnot(is(oui, "ouija_fit"))
-  if(!any(oui$response_type == "transient")) return(NULL)
+  if (!any(oui$response_type == "transient")) return(NULL)
   posterior.mode(mcmc(extract(oui$fit, "p")$p))
 }
 
@@ -49,7 +49,7 @@ peak_times <- function(oui) {
 #' @export
 switch_strengths <- function(oui) {
   stopifnot(is(oui, "ouija_fit"))
-  if(!any(oui$response_type == "switch")) return(NULL)
+  if (!any(oui$response_type == "switch")) return(NULL)
   posterior.mode(mcmc(extract(oui$fit, "k")$k))
 }
 
@@ -107,11 +107,11 @@ predicted_expression <- function(oui) {
   mu0_map <- posterior.mode(mcmc(extr_switch$mu0_switch))
   k_map <- posterior.mode(mcmc(extr_switch$k))
   t0_map <- posterior.mode(mcmc(extr_switch$t0))
-  sig_map <- mapply(tsigmoid, mu0_map, k_map, t0_map, 
+  sig_map <- mapply(tsigmoid, mu0_map, k_map, t0_map,
                    MoreArgs = list(t = map_pseudotime(oui)))
-  
+
   # Transient parameters
-  if(any(oui$response_type == "transient")) {
+  if (any(oui$response_type == "transient")) {
     extr_transient <- extract(oui$fit, c("mu0_transient", "p", "b"))
     mu0_transient_map <- posterior.mode(mcmc(extr_transient$mu0_transient))
     p_map <- posterior.mode(mcmc(extr_transient$p))
@@ -119,11 +119,11 @@ predicted_expression <- function(oui) {
     t_map <- mapply(transient, mu0_transient_map, p_map, b_map,
                     MoreArgs = list(t = map_pseudotime(oui)))
   }
-  
+
   pred_expr <- matrix(NA, nrow = nrow(oui$Y), ncol = ncol(oui$Y))
   colnames(pred_expr) <- colnames(oui$Y)
   pred_expr[, oui$response_type == "switch"] <- sig_map
-  if(any(oui$response_type == "transient")) {
+  if (any(oui$response_type == "transient")) {
     pred_expr[, oui$response_type == "transient"] <- t_map
   }
   return(pred_expr)
@@ -134,10 +134,10 @@ predicted_expression <- function(oui) {
 sample_predicted_expression <- function(oui) {
   extr <- extract(oui$fit, pars = c("mu0_switch", "k", "t0"))
   sample_ind <- sample(seq_len(nrow(extr$mu0_switch)), 1)
-  mu0 <- extr$mu0_switch[sample_ind,]
-  k <- extr$k[sample_ind,]
-  t0 <- extr$t0[sample_ind,]
-  sig_map <- mapply(tsigmoid, mu0, k, t0, 
+  mu0 <- extr$mu0_switch[sample_ind, ]
+  k <- extr$k[sample_ind, ]
+  t0 <- extr$t0[sample_ind, ]
+  sig_map <- mapply(tsigmoid, mu0, k, t0,
                     MoreArgs = list(t = map_pseudotime(oui)))
   colnames(sig_map) <- colnames(oui$Y)
   return(sig_map)
@@ -162,12 +162,14 @@ print.ouija_fit <- function(x, ...) {
   msg <- paste("A Ouija fit with",
                x$N, "cells and", x$G, "marker genes",
                "\nInference type: ", itype)
-  if(x$inference_type == "hmc") {
-    msg <- paste(msg, "\nMCMC info:", x$iter, "iterations on", x$chains, "chains")
+  if (x$inference_type == "hmc") {
+    msg <- paste(msg, "\nMCMC info:", x$iter,
+                 "iterations on", x$chains, "chains")
   }
   n_switch <- sum(x$response_type == "switch")
   n_transient <- sum(x$response_type == "transient")
-  msg <- paste(msg, "\n(Gene behaviour) Switch/transient:",n_switch, "/", n_transient)
+  msg <- paste(msg, "\n(Gene behaviour) Switch/transient:",
+               n_switch, "/", n_transient)
   cat(msg)
 }
 
@@ -186,7 +188,7 @@ print.ouija_fit <- function(x, ...) {
 #' @keywords internal
 #'
 tsigmoid <- function(mu0, k, t0, t) {
-  return( 2 * mu0 / (1 + exp(-k*(t - t0))))
+  return( 2 * mu0 / (1 + exp(-k * (t - t0))))
 }
 
 
@@ -200,7 +202,7 @@ tsigmoid <- function(mu0, k, t0, t) {
 #' @keywords internal
 #' @return The transient (rbf) function evaluated at input coordinates
 transient <- function(mu0, p, b, t) {
-  return( 2 * mu0 * exp(-10 * b * (t - p)^2) )
+  return( 2 * mu0 * exp(-10 * b * (t - p) ^ 2) )
 }
 
 #' Create, order, and plot a consistency matrix
@@ -231,12 +233,12 @@ transient <- function(mu0, p, b, t) {
 consistency_matrix <- function(oui) {
   stopifnot(is(oui, "ouija_fit"))
   N <- oui$N
-  pst_traces <- extract(oui$fit, "t")$t  
+  pst_traces <- extract(oui$fit, "t")$t
   consistency_mat <- matrix(NA, nrow = N, ncol = N)
-  for(i in 1:(N-1)) {
-    for(j in (i+1):N) {
-      consistency_mat[i,j] <- mean(pst_traces[,i] > pst_traces[,j])
-      consistency_mat[j,i] <- 1 - consistency_mat[i,j]
+  for (i in 1:(N - 1)) {
+    for (j in (i + 1):N) {
+      consistency_mat[i, j] <- mean(pst_traces[, i] > pst_traces[, j])
+      consistency_mat[j, i] <- 1 - consistency_mat[i, j]
     }
   }
   return(consistency_mat)
@@ -248,7 +250,7 @@ consistency_matrix <- function(oui) {
 #' @examples
 #' cmo <- consistency_matrix_ordered(oui, cmat)
 consistency_matrix_ordered <- function(oui, cmat = NULL) {
-  if(is.null(cmat)) cmat <- consistency_matrix(oui)
+  if (is.null(cmat)) cmat <- consistency_matrix(oui)
   pst_order <- order(map_pseudotime(oui))
   cmat <- cmat[pst_order, pst_order]
   return(cmat)
@@ -276,7 +278,7 @@ consistency_matrix_ordered <- function(oui, cmat = NULL) {
 cluster_consistency <- function(cmat, n_clusters = 2:9) {
   diag(cmat) <- 0
   pca <- prcomp(cmat)
-  pc1 <- pca$x[,1]
+  pc1 <- pca$x[, 1]
   mc <- Mclust(pc1, G = n_clusters)
   return(mc$classification)
 }
@@ -293,35 +295,43 @@ regulation_df <- function(oui) {
   G_switch <- sum(response_type == "switch")
   G_transient <- sum(response_type == "transient")
   gene_names <- colnames(oui$Y)
-  
+
   switch_times <- extract(oui$fit, "t0")$t0
   peak_times <- extract(oui$fit, "p")$p
-  
+
   switch_map <- data.frame(
     switch_index = seq_len(G_switch),
     y_index = which(response_type == "switch")
   )
-  
+
   transient_map <- data.frame(
     transient_index = seq_len(G_transient),
     y_index = which(response_type == "transient")
   )
-  
+
   dfs <- list()
-  
-  for(i in 1:(oui$G-1)) {
-    for(j in (i+1):oui$G) {
+
+  for (i in 1:(oui$G - 1)) {
+    for (j in (i + 1):oui$G) {
       gene_i <- gene_names[i]
       rtype_i <- response_type[i]
       gene_j <- gene_names[j]
       rtype_j <- response_type[j]
       param_i <- param_j <- NULL
-      
-      if(rtype_i == "switch") param_i <- switch_times[,dplyr::filter(switch_map, y_index == i) %>% .$switch_index]
-      if(rtype_j == "switch") param_j <- switch_times[,dplyr::filter(switch_map, y_index == j) %>% .$switch_index]
-      if(rtype_i == "transient") param_i <- peak_times[,dplyr::filter(transient_map, y_index == i) %>% .$transient_index]
-      if(rtype_j == "transient") param_j <- peak_times[,dplyr::filter(transient_map, y_index == j) %>% .$transient_index]
-      
+
+      if (rtype_i == "switch") param_i <-
+        switch_times[, dplyr::filter(switch_map, y_index == i) %>%
+                       .$switch_index]
+      if (rtype_j == "switch") param_j <-
+        switch_times[, dplyr::filter(switch_map, y_index == j) %>%
+                       .$switch_index]
+      if (rtype_i == "transient") param_i <-
+        peak_times[, dplyr::filter(transient_map, y_index == i) %>%
+                     .$transient_index]
+      if (rtype_j == "transient") param_j <-
+        peak_times[, dplyr::filter(transient_map, y_index == j) %>%
+                     .$transient_index]
+
       df <- data_frame(gene_i = gene_i, rtype_i = rtype_i,
                        gene_j = gene_j, rtype_j = rtype_j,
                        param_diffs = param_i - param_j)
@@ -355,23 +365,22 @@ regulation_df <- function(oui) {
 #' 
 #' @return A \code{data.frame} as described above
 gene_regulation <- function(oui) {
-  label <- param_diffs <- gene_i <- gene_j <- gene_A <- gene_B <- NULL
+  label <- param_diffs <- gene_i <- gene_j <- NULL
   rtype_i <- rtype_j <- NULL
-  
+
   reg_df <- regulation_df(oui)
   reg_df <- dplyr::select(reg_df, -rtype_i, -rtype_j)
-  
-  get_95 <- function(v, i) coda::HPDinterval(mcmc(v))[1,i]
-  reg_df <- reg_df %>% 
-    group_by(label, gene_i, gene_j) %>% 
+
+  get_95 <- function(v, i) coda::HPDinterval(mcmc(v))[1, i]
+  reg_df <- reg_df %>%
+    group_by(label, gene_i, gene_j) %>%
     dplyr::summarise(mean_difference = mean(param_diffs),
               lower_95 = get_95(param_diffs, 1),
               upper_95 = get_95(param_diffs, 2))
   reg_df <- mutate(reg_df, signif = FALSE)
   reg_df$signif[reg_df$mean_difference < 0 & reg_df$upper_95 < 0] <- TRUE
   reg_df$signif[reg_df$mean_difference > 0 & reg_df$lower_95 > 0] <- TRUE
-  reg_df <- dplyr::rename(reg_df, gene_A = gene_i, gene_B = gene_j, 
+  reg_df <- dplyr::rename(reg_df, gene_A = gene_i, gene_B = gene_j,
                           significant = signif)
   reg_df
 }
-
