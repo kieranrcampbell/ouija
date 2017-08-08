@@ -4,3 +4,13 @@ language: r
 r: bioc-devel
 sudo: false
 cache: packages
+r_binary_pacakges:
+  - r-bioc-biobase
+  - r-bioc-biocgenerics
+  - r-bioc-genomicranges
+  - r-bioc-iranges
+  - r-bioc-limma
+  - r-cran-ggplot2
+  - r-cran-plyr
+  - r-cran-stringr
+  - r-cran-testthat 
