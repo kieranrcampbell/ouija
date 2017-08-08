@@ -356,6 +356,7 @@ regulation_df <- function(oui) {
 #' @return A \code{data.frame} as described above
 gene_regulation <- function(oui) {
   label <- param_diffs <- gene_i <- gene_j <- gene_A <- gene_B <- NULL
+  rtype_i <- rtype_j <- NULL
   
   reg_df <- regulation_df(oui)
   reg_df <- dplyr::select(reg_df, -rtype_i, -rtype_j)

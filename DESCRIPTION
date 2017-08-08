@@ -1,13 +1,10 @@
 Package: ouija
 Type: Package
-Title: Incorporating prior knowledge in single-cell trajectory learning
-        using Bayesian nonlinear factor analysis
+Title: Interpretable marker-based single-cell pseudotime using Bayesian parametric models
 Version: 0.99.0
 Date: 2017-07-29
 Authors@R: person("Kieran", "Campbell", email = "kieranrcampbell@gmail.com", role = c("aut", "cre"))
-Description: Ouija learns trajectories or 'pseudotimes' from single-cell RNA-seq data. Using Bayesian 
-  nonlinear factor analysis biological knowledge of gene expression across pseudotime can be
-  encoded as informative priors in the model.
+Description: Ouija is a probabilistic framework that allows for interpretable learning of single-cell pseudotimes using only small panels of marker genes. It contains Bayesian hypothesis testing for differences in gene regulation timing and allows for probabilistic identification of metastable states.
 License: GPL (>=3)
 Depends: R (>= 3.4.0), Rcpp (>= 0.12.0)
 Imports: 
@@ -27,7 +24,8 @@ Suggests:
   rmarkdown,
   knitr,
   BiocStyle,
-  testthat
+  testthat,
+  SingleCellExperiment
 biocViews: Software, Transcriptomics, GeneExpression, RNASeq,
         SingleCell, Bayesian, PrincipalComponent
 NeedsCompilation: yes
