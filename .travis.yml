@@ -1,19 +1,49 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
-language: r
-r: bioc-devel
-sudo: false
-cache: packages
-r_binary_packages:
-  - r-bioc-biobase
-  - r-bioc-biocgenerics
-  - r-bioc-genomicranges
-  - r-bioc-iranges
-  - r-bioc-limma
-  - r-cran-ggplot2
-  - r-cran-plyr
-  - r-cran-stringr
-  - r-cran-testthat,
-  - r-cran-reshape2
-  - r-cran-rsqlite
-  - r-cran-rcppeigen
+# language: r
+# r: bioc-devel
+# sudo: false
+# cache: packages
+# r_binary_packages:
+#   - r-bioc-biobase
+#   - r-bioc-biocgenerics
+#   - r-bioc-genomicranges
+#   - r-bioc-iranges
+#   - r-bioc-limma
+#   - r-cran-ggplot2
+#   - r-cran-plyr
+#   - r-cran-stringr
+#   - r-cran-testthat,
+#   - r-cran-reshape2
+#   - r-cran-rsqlite
+#   - r-cran-rcppeigen
+
+
+
+language: c
+sudo: required
+
+before_install:
+  - curl -OL https://raw.githubusercontent.com/metacran/r-builder/master/pkg-build.sh
+  - chmod 755 pkg-build.sh
+  - ./pkg-build.sh bootstrap
+
+install:
+  - ./pkg-build.sh install_deps
+
+script:
+  - ./pkg-build.sh run_tests
+
+after_failure:
+  - ./pkg-build.sh dump_logs
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
+
+env:
+  matrix:
+    - RVERSION=oldrel
+    - RVERSION=release
+    - RVERSION=devel
