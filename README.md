@@ -37,7 +37,7 @@ oui <- ouija(synth_gex)
 pseudotimes <- map_pseudotime(oui)
 ```
 
-For further usage options see the vignette.
+For further usage options see the vignette. A prebuilt vignette can be found [here](http://kieranrcampbell.github.io/ouija).
 
 
 ## Authors
