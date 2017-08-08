@@ -10,7 +10,7 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-# library(scater)
+library(scater)
 library(SingleCellExperiment)
 library(ggplot2)
 library(ouija)
