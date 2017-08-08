@@ -4,7 +4,7 @@ language: r
 r: bioc-devel
 sudo: false
 cache: packages
-r_binary_pacakges:
+r_binary_packages:
   - r-bioc-biobase
   - r-bioc-biocgenerics
   - r-bioc-genomicranges
@@ -13,4 +13,7 @@ r_binary_pacakges:
   - r-cran-ggplot2
   - r-cran-plyr
   - r-cran-stringr
-  - r-cran-testthat 
+  - r-cran-testthat,
+  - r-cran-reshape2
+  - r-cran-rsqlite
+  - r-cran-rcppeigen
