@@ -55,22 +55,23 @@
 #' response_types <- c(rep("switch", 9), rep("transient", 2))
 #' oui <- ouija(example_gex[1:40,], response_type = response_types, iter = 100)
 #' }
-  ouija <- function(x,
-                  response_type = "switch",
-                  switch_strengths = NULL,
-                  switch_times = NULL,
-                  switch_strength_sd = NULL,
-                  switch_time_sd = NULL,
-                  peak_times = NULL,
-                  peak_lengths = NULL,
-                  peak_time_sd = NULL,
-                  peak_length_sd = NULL,
-                  student_df = 10,
-                  inference_type = c("hmc", "vb"),
-                  normalise_expression = TRUE,
-                  single_cell_experiment_assay = "exprs",
-                  ...) {
+ouija <- function(x,
+                response_type = "switch",
+                switch_strengths = NULL,
+                switch_times = NULL,
+                switch_strength_sd = NULL,
+                switch_time_sd = NULL,
+                peak_times = NULL,
+                peak_lengths = NULL,
+                peak_time_sd = NULL,
+                peak_length_sd = NULL,
+                student_df = 10,
+                inference_type = c("hmc", "vb"),
+                normalise_expression = TRUE,
+                single_cell_experiment_assay = "exprs",
+                ...) {
 
+  library(rstan)
   model_file <- "ouija.stan"
 
   inference_type <- match.arg(inference_type)
@@ -148,7 +149,7 @@
 
 
   stanfile <- system.file(model_file, package = "ouija")
-  model <- stan_model(stanfile, save_dso = TRUE, verbose = FALSE)
+  # model <- stan_model(stanfile, save_dso = TRUE, verbose = FALSE)
 
   ## manipulate stan defaults
   stanargs <- list(...)
@@ -180,15 +181,18 @@
       stanargs$init <- list(t = pc1_scaled, k = k_inits)
     }
   }
-  stanargs$object <- model
+
   stanargs$data <- data
 
 
   ## call inference
   fit <- NULL
   if (inference_type == "hmc") {
-    fit <- do.call(sampling, stanargs)
+    stanargs$file <- stanfile
+    fit <- do.call(stan, stanargs)
   } else {
+    model <- stan_model(stanfile, save_dso = TRUE, verbose = FALSE)
+    stanargs$object <- model
     fit <- do.call(vb, stanargs)
   }
 

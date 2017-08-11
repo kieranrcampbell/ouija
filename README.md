@@ -1,7 +1,5 @@
 # Ouija
 
-[![Build Status](https://travis-ci.org/kieranrcampbell/ouija.svg?branch=master)](https://travis-ci.org/kieranrcampbell/ouija)
-
 
 Ouija is a probabilistic pseudotime framework. Ouija 
 

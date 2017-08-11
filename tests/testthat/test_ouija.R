@@ -1,11 +1,13 @@
 
 library(testthat)
+library(Rcpp)
+library(ouija)
 
 context("Basic functionality")
 
 
 test_that("ouija returns valid object", {
-  library(ouija)
+
   if (TRUE) {
     data(example_gex)
     G <- 4
