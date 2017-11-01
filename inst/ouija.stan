@@ -9,16 +9,16 @@ data {
   vector<lower = 0>[N] Y_transient[G_transient]; // matrix of gene expression values
   
   real k_means[G_switch]; // mean parameters for k provided by user
-  real k_sd[G_switch]; // standard deviation parameters for k provided by user
+  real<lower = 0> k_sd[G_switch]; // standard deviation parameters for k provided by user
   
   real t0_means[G_switch]; // mean parameters for t0 provided by user
-  real t0_sd[G_switch]; // standard deviation parameters for t0 provided by user
+  real<lower = 0> t0_sd[G_switch]; // standard deviation parameters for t0 provided by user
   
   real p_means[G_transient]; // mean peak time
-  real p_sd[G_transient]; // sd peak time
+  real<lower = 0> p_sd[G_transient]; // sd peak time
   
   real b_means[G_transient]; // mean bandwidth
-  real b_sd[G_transient]; // sd bandwidth
+  real<lower = 0> b_sd[G_transient]; // sd bandwidth
   
   real student_df; // student d-o-f
 }
