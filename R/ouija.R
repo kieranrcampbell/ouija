@@ -21,6 +21,18 @@
 #' backwards compatibility with older versions of \pkg{scater})
 #' }
 #' 
+#' \strong{Controlling inference with stan}
+#' 
+#' The \code{...} argument accepts various parameters than can be passed to \pkg{rstan} 
+#' to control inference using HMC sampling. Specifically these are
+#' \enumerate{
+#'  \item \code{iter} Number of HMC iterations (default \code{1e4})
+#'  \item \code{warmup} Number of iterations to use as warmup (defaults to \code{iter/2})
+#'  \item \code{chains} Number of HMC chains to run in parallel (defaults to 1, but more recommended)
+#'  \item \code{thin} The thinning of the markov chain (ie every \code{thin} iteration is kept). Defaults 
+#'  so that 1000 samples are returned.
+#' }
+#' 
 #' 
 #' @param x Input expression. See details below.
 #' @param switch_strengths Prior means of switch strengths
