@@ -1,8 +1,11 @@
 
-#' Fit a Ouija object.
+#' Fit descriptive single-cell pseudotime using Ouija
 #' 
-#' Fit a Bayesian non-linear factor analysis model given some single-cell
-#' gene expression data.
+#' Given single-cell expression data fit a Bayesian non-linear factor analysis model using Ouija.
+#' This infers pseudotimes along with interpretable gene behaviour parameters 
+#' (corresponding to switch times and strengths, peak times and lengths). Each gene must be specified 
+#' beforehand as switch-like or transient (default to all switch-like). Priors on all parameters
+#' may also be specified.
 #' 
 #' \strong{Input format}
 #' 
@@ -12,9 +15,10 @@
 #' \item A cell-by-gene expression matrix of non-negative values. 
 #' We recommend using log2(TPM + 1) or log2(RPKM + 1) as this 
 #' is what the mean-variance relationship in the model is designed for.
+#' \item A \code{SingleCellExperiment} (from the \pkg{SingleCellExperiment}) package (\strong{recommended})
 #' \item An \code{ExpressionSet} (e.g. if you're using the \pkg{scater} package)
-#' where \code{exprs(SCESet)} corresponds to the transpose of the matrix in (1)
-#' \item A \code{SingleCellExperiment} (from the \pkg{SingleCellExperiment}) package
+#' where \code{exprs(SCESet)} corresponds to the transpose of the matrix in (1) (kept for
+#' backwards compatibility with older versions of \pkg{scater})
 #' }
 #' 
 #' 
@@ -36,7 +40,8 @@
 #' expression. Defaults to "switch" for all genes
 #' @param single_cell_experiment_assay Character vector specifying the assay from 
 #' \code{SingleCellExperiment} to use. 
-#' Defaults to \code{assays(single_cell_experiment)$exprs}.
+#' Defaults to \code{"logcounts"}, so the input expression
+#' matrix used is \code{assay(single_cell_experiment, "logcounts")}.
 #' @param normalise_expression Logical, default TRUE. If TRUE the data is pre-normalised
 #' so the average peak expression is approximately 1. This makes the strength parameters
 #' approximately comparable between genes.
@@ -47,7 +52,9 @@
 #' 
 #' @export
 #' 
-#' @return An object of type \code{ouija_fit}
+#' @return An object of type \code{ouija_fit} which contains both the \code{stan} fit
+#' along with information about the setup. For more information see the vignette 
+#' (online at \url{http://kieranrcampbell.github.io/ouija/}).
 #' 
 #' @examples 
 #' \dontrun{
@@ -68,7 +75,7 @@ ouija <- function(x,
                 student_df = 10,
                 inference_type = c("hmc", "vb"),
                 normalise_expression = TRUE,
-                single_cell_experiment_assay = "exprs",
+                single_cell_experiment_assay = "logcounts",
                 ...) {
 
   library(rstan)

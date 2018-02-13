@@ -2,13 +2,14 @@
 % Please edit documentation in R/ouija.R
 \name{ouija}
 \alias{ouija}
-\title{Fit a Ouija object.}
+\title{Fit descriptive single-cell pseudotime using Ouija}
 \usage{
 ouija(x, response_type = "switch", switch_strengths = NULL,
   switch_times = NULL, switch_strength_sd = NULL, switch_time_sd = NULL,
   peak_times = NULL, peak_lengths = NULL, peak_time_sd = NULL,
   peak_length_sd = NULL, student_df = 10, inference_type = c("hmc", "vb"),
-  normalise_expression = TRUE, single_cell_experiment_assay = "exprs", ...)
+  normalise_expression = TRUE, single_cell_experiment_assay = "logcounts",
+  ...)
 }
 \arguments{
 \item{x}{Input expression. See details below.}
@@ -44,16 +45,22 @@ approximately comparable between genes.}
 
 \item{single_cell_experiment_assay}{Character vector specifying the assay from 
 \code{SingleCellExperiment} to use. 
-Defaults to \code{assays(single_cell_experiment)$exprs}.}
+Defaults to \code{"logcounts"}, so the input expression
+matrix used is \code{assay(single_cell_experiment, "logcounts")}.}
 
 \item{...}{Additional arguments to \code{rstan::sampling} or \code{rstan::vb}}
 }
 \value{
-An object of type \code{ouija_fit}
+An object of type \code{ouija_fit} which contains both the \code{stan} fit
+along with information about the setup. For more information see the vignette 
+(online at \url{http://kieranrcampbell.github.io/ouija/}).
 }
 \description{
-Fit a Bayesian non-linear factor analysis model given some single-cell
-gene expression data.
+Given single-cell expression data fit a Bayesian non-linear factor analysis model using Ouija.
+This infers pseudotimes along with interpretable gene behaviour parameters 
+(corresponding to switch times and strengths, peak times and lengths). Each gene must be specified 
+beforehand as switch-like or transient (default to all switch-like). Priors on all parameters
+may also be specified.
 }
 \details{
 \strong{Input format}
@@ -64,9 +71,10 @@ Ouija takes input in three formats:
 \item A cell-by-gene expression matrix of non-negative values. 
 We recommend using log2(TPM + 1) or log2(RPKM + 1) as this 
 is what the mean-variance relationship in the model is designed for.
+\item A \code{SingleCellExperiment} (from the \pkg{SingleCellExperiment}) package (\strong{recommended})
 \item An \code{ExpressionSet} (e.g. if you're using the \pkg{scater} package)
-where \code{exprs(SCESet)} corresponds to the transpose of the matrix in (1)
-\item A \code{SingleCellExperiment} (from the \pkg{SingleCellExperiment}) package
+where \code{exprs(SCESet)} corresponds to the transpose of the matrix in (1) (kept for
+backwards compatibility with older versions of \pkg{scater})
 }
 }
 \examples{
