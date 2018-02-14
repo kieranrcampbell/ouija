@@ -45,8 +45,7 @@ Under the hood, Ouija uses Bayesian non-linear factor analysis with priors on th
 Ouija takes input in three forms:
 
 1. A cell-by-gene expression matrix of non-negative values. We recommend using `log2(TPM + 1)` or `log2(RPKM + 1)` as this is what the mean-variance relationship in the model is designed for.
-2. An `ExpressionSet` (e.g. if you're using the [scater](https://bioconductor.org/packages/release/bioc/html/scater.html) package), where `exprs(SCESet)` corresponds to the transpose of the matrix in (1)
-3. A `SingleCellExperiment` (from the [SingleCellExperiment](https://bioconductor.org/packages/devel/bioc/html/SingleCellExperiment.html) package)
+2. A `SingleCellExperiment` (from the [SingleCellExperiment](https://bioconductor.org/packages/devel/bioc/html/SingleCellExperiment.html) package)
 
 Here we can use some synthetic data bundled with the package. This contains a gene expression matrix `example_gex` comprising 11 genes and 400 cells, of which the first 9 are switch-like and the final 2 are transient
 
@@ -55,14 +54,13 @@ data(example_gex)
 example_gex[1:3, ]
 ```
 
-We can further create example `SCESet` and `SingleCellExperiment`, either of which Ouija can use as input:
+We can further create example `SingleCellExperiment` that Ouija can use as input:
 
 ```{r}
-sceset <- newSCESet(exprsData = t(example_gex))
 single_cell_set <- SingleCellExperiment(assays = list(exprs = t(example_gex)))
 ```
 
-For the three input cases above Ouija can equivalently use `ouija(example_gex, ...)`, `ouija(sceset,...)`, or `ouija(single_cell_set, ...)`. By default Ouija uses the `exprs` assay for a `SingleCellExperiment`, though this can be changed using the `single_cell_experiment_assay` argument to the `ouija` function.
+For the two input cases above Ouija can equivalently use `ouija(example_gex, ...)` or `ouija(single_cell_set, ...)`. By default Ouija uses the `logcounts` assay for a `SingleCellExperiment`, though this can be changed using the `single_cell_experiment_assay` argument to the `ouija` function.
 
 ## Response types
 

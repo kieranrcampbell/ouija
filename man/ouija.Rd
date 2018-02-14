@@ -71,10 +71,7 @@ Ouija takes input in three formats:
 \item A cell-by-gene expression matrix of non-negative values. 
 We recommend using log2(TPM + 1) or log2(RPKM + 1) as this 
 is what the mean-variance relationship in the model is designed for.
-\item A \code{SingleCellExperiment} (from the \pkg{SingleCellExperiment}) package (\strong{recommended})
-\item An \code{ExpressionSet} (e.g. if you're using the \pkg{scater} package)
-where \code{exprs(SCESet)} corresponds to the transpose of the matrix in (1) (kept for
-backwards compatibility with older versions of \pkg{scater})
+\item [\strong{Recommended}] A \code{SingleCellExperiment} (from the \pkg{SingleCellExperiment}) package 
 }
 
 \strong{Controlling inference with stan}
