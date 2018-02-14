@@ -8,7 +8,6 @@ r_packages:
   - dplyr
   - tidyr
   - ggplot2
-  - rstan
   - rmarkdown
 biocpackages:
   - SingleCellExperiment
