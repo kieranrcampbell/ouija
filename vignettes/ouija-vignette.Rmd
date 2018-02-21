@@ -1,7 +1,7 @@
 ---
 title: "Ouija: Interpretable marker-based single-cell pseudotime using Bayesian parametric models"
 author: "Kieran R Campbell"
-date: "August 2017"
+date: "February 2018"
 output: BiocStyle::html_document
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
