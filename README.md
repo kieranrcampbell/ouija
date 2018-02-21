@@ -29,7 +29,9 @@ devtools::install_github("kieranrcampbell/ouija", local = FALSE,
 
 ### Model fitting
 
-Input is a cell-by-gene expression matrices that is non-negative and represents logged gene expression values. We recommend using `log2(TPM + 1)`. This can either take the form of a matrix or an `ExpressionSet` such as from the [scater](https://bioconductor.org/packages/release/bioc/html/scater.html) package:
+Input is a cell-by-gene expression matrices that is non-negative and represents logged gene expression values. We recommend using `log2(TPM + 1)`. This can either take the form of a matrix or a [`SingleCellExperiment`](https://bioconductor.org/packages/release/bioc/html/SingleCellExperiment.html) (use of the `SingleCellExperiment` infrastructure is highly encouraged for single-cell analyses). By default the `logcounts` assay of a `SingleCellExperiment` will be used.
+
+To fit the pseudotimes, pass the input data to the `ouija` function:
 
 ```r
 library(ouija)
@@ -37,6 +39,8 @@ data(synth_gex) # synthetic gene expression data bundled
 oui <- ouija(synth_gex)
 pseudotimes <- map_pseudotime(oui)
 ```
+
+The `map_pseudotimes` function extracts the maximum-a-posteriori (MAP) estimates of the pseudotimes.
 
 For further usage options see the vignette. A prebuilt vignette can be found [here](http://kieranrcampbell.github.io/ouija).
 
@@ -49,6 +53,8 @@ Wellcome Trust Centre for Human Genetics, University of Oxford
 ## Artwork
 
 <img src="inst/www/chris_ouija.jpg" width="500"/>
+
+Artwork by `cwcyau`, the mysterious banksy-esque artist of the statistical genomics world.
 
 
 
