@@ -37,7 +37,7 @@ biocViews:
   PrincipalComponent, 
   GeneRegulation
 NeedsCompilation: yes
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
 VignetteBuilder: knitr
 Author: Kieran Campbell [aut, cre]
 Maintainer: Kieran Campbell <kieranrcampbell@gmail.com>

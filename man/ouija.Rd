@@ -5,11 +5,11 @@
 \title{Fit descriptive single-cell pseudotime using Ouija}
 \usage{
 ouija(x, response_type = "switch", switch_strengths = NULL,
-  switch_times = NULL, switch_strength_sd = NULL, switch_time_sd = NULL,
-  peak_times = NULL, peak_lengths = NULL, peak_time_sd = NULL,
-  peak_length_sd = NULL, student_df = 10, inference_type = c("hmc", "vb"),
-  normalise_expression = TRUE, single_cell_experiment_assay = "logcounts",
-  ...)
+  switch_times = NULL, switch_strength_sd = NULL,
+  switch_time_sd = NULL, peak_times = NULL, peak_lengths = NULL,
+  peak_time_sd = NULL, peak_length_sd = NULL, student_df = 10,
+  inference_type = c("hmc", "vb"), normalise_expression = TRUE,
+  single_cell_experiment_assay = "logcounts", ...)
 }
 \arguments{
 \item{x}{Input expression. See details below.}

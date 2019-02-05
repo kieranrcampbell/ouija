@@ -3,7 +3,6 @@
 \name{predexprs}
 \alias{predexprs}
 \alias{predicted_expression}
-\alias{predexprs}
 \alias{sample_predicted_expression}
 \title{Predicted expression (mean and sampling)}
 \usage{

@@ -3,9 +3,7 @@
 \name{plotexprs}
 \alias{plotexprs}
 \alias{plot_switch_times}
-\alias{plotexprs}
 \alias{plot_peak_times}
-\alias{plotexprs}
 \alias{plot_expression}
 \title{Plot fitted expression, switch times, and peak times}
 \usage{

@@ -98,8 +98,33 @@ ouija <- function(x,
     Y <- t(Biobase::exprs(x))
   } else if (is(x, "SingleCellExperiment")) {
     Y <- t(x@assays[[ single_cell_experiment_assay ]])
+    
+    ## Now we sort out the cell and gene names
+    if(!is.null(colnames(x))) {
+      rownames(Y) <- colnames(x)
+    } else {
+      rownames(Y) <- paste0("cell_", seq_len(ncol(x)))
+    }
+    
+    if(!is.null(rownames(x))) {
+      colnames(Y) <- rownames(x)
+    } else {
+      colnames(Y) <- paste0("gene_", seq_len(nrow(x)))
+    }
+    
   } else {
     Y <- x
+    
+    ## Again sort out the cell and gene names if absent
+    if(is.null(rownames(Y))) {
+      rownames(Y) <- paste0("cell_", seq_len(nrow(Y)))
+    }
+    if(is.null(colnames(Y))) {
+      colnames(Y) <- paste0("gene_", seq_len(ncol(Y)))
+    }
+
+    
+    
   }
   if (!is(Y, "matrix")) {
     stop("x must either be an SCESet or matrix of gene expression values")

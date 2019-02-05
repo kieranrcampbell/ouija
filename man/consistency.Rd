@@ -3,9 +3,7 @@
 \name{consistency}
 \alias{consistency}
 \alias{plot_consistency}
-\alias{consistency}
 \alias{consistency_matrix}
-\alias{consistency}
 \alias{consistency_matrix_ordered}
 \title{Create, order, and plot a consistency matrix}
 \usage{

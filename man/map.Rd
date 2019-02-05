@@ -3,11 +3,8 @@
 \name{map}
 \alias{map}
 \alias{map_pseudotime}
-\alias{map}
 \alias{switch_times}
-\alias{map}
 \alias{peak_times}
-\alias{map}
 \alias{switch_strengths}
 \title{Extract the MAP estimates from a \code{ouija_fit}}
 \usage{
