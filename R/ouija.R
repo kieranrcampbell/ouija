@@ -58,6 +58,7 @@
 #' @import rstan
 #' @importFrom Rcpp loadModule
 #' @importFrom stats coef lm prcomp
+#' @importFrom SummarizedExperiment assay assays
 #' 
 #' @export
 #' 
@@ -97,7 +98,12 @@ ouija <- function(x,
     ## convert to expression matrix Y
     Y <- t(Biobase::exprs(x))
   } else if (is(x, "SingleCellExperiment")) {
-    Y <- t(x@assays[[ single_cell_experiment_assay ]])
+    
+    if(!(single_cell_experiment_assay %in% names(assays(x)))) {
+      stop(sprintf("Assay %s not in input SingleCellExperiment\nCall scater::normalize(x) first", single_cell_experiment_assay))
+    }
+    
+    Y <- t(assay(x, single_cell_experiment_assay))
     
     ## Now we sort out the cell and gene names
     if(!is.null(colnames(x))) {
