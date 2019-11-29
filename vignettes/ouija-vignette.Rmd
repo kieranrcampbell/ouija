@@ -241,7 +241,7 @@ In general, HMC will provide more accurate inference with approximately correct 
 These inference types may be invoked using the `inference_type` argument:
 
 ```{r inference-type, eval = FALSE}
-oui_vb <- ouija(synth_gex, response_types,
+oui_vb <- ouija(example_gex, response_types,
                 inference_type = "vb")
 ```
 

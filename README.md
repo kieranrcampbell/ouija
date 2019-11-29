@@ -35,8 +35,8 @@ To fit the pseudotimes, pass the input data to the `ouija` function:
 
 ```r
 library(ouija)
-data(synth_gex) # synthetic gene expression data bundled
-oui <- ouija(synth_gex)
+data(example_gex) # synthetic gene expression data bundled
+oui <- ouija(example_gex)
 pseudotimes <- map_pseudotime(oui)
 ```
 
